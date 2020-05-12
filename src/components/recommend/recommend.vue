@@ -23,7 +23,7 @@
     name: "Recommend",
     data() {
       return {
-
+        
       }
     },
     created() {
