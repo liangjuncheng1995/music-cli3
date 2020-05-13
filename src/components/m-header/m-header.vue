@@ -13,7 +13,11 @@ export default {
 
 <style lang="scss" scoped>
 .m-header {
-  position: relative;
+  width: 100%;
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  background: #fff;
   height: 44px;
   text-align: center;
   color: $theme-color;

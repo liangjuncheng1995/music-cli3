@@ -17,13 +17,19 @@
   </div>
 </template>
 <script>
-  export default {
-    name: "tab"
-  };
-
+export default {
+  name: "tab"
+};
 </script>
 
 <style lang="scss" scoped>
+.tab-fiexed {
+  position: fixed;
+  width: 100%;
+  top: 44px;
+  z-index: 100;
+  background: #fff;
+
   .tab {
     display: flex;
     height: 44px;
@@ -40,10 +46,10 @@
       }
     }
   }
+}
 
-  .router-link-active .tab-link {
-    color: $theme-color !important;
-    border-bottom: 2px solid $theme-color;
-  }
-
+.router-link-active .tab-link {
+  color: $theme-color !important;
+  border-bottom: 2px solid $theme-color;
+}
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="search">
     搜索页面
   </div>
 </template>
@@ -11,5 +11,7 @@
 </script>
 
 <style lang="scss" type="text/css">
-  
+  .search {
+    margin-top: 88px;
+  }
 </style>

@@ -71,10 +71,8 @@ export default {
 
 <style lang="scss" scoped>
 .recommend {
-  position: fixed;
   width: 100%;
-  top: 88px;
-  bottom: 0;
+  margin-top: 88px;
 
   .recommend-content {
     height: 100%;
