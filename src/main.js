@@ -2,8 +2,13 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import VueLazyLoad from 'vue-lazyload'
 
 import '@/assets/styles/reset.css'
+
+Vue.use(VueLazyLoad,{
+  loading:require('@/assets/img/loading.png')
+})
 
 Vue.config.productionTip = false
 

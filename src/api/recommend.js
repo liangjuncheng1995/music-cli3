@@ -1,4 +1,5 @@
 import { get } from '../util/http'
+import service from '../util/request'
 import jsonp from '../common/js/jsonp'
 import { commonParams, options } from './config'
 
@@ -11,6 +12,27 @@ export function getRecommend() {
         needNewCode: 1
     })
     return jsonp(url, data, options)
+}
+
+export function getDiscList() {
+    const url = "/musicApi/getDiscList"
+
+    const data = Object.assign({}, commonParams,{
+        platform: 'yqq',
+        hostUin: 0,
+        sin: 0,
+        ein: 29,
+        sortId: 5,
+        needNewCode: 0,
+        categoryId: 10000000,
+        rnd: Math.random(),
+        format: 'json'
+    }) 
+    return service.request({
+        method: "get",
+        url,
+        params: data
+    })
 }
 
 const getBannerList = get('/musicApi/getBannerList')
