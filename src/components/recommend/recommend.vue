@@ -25,6 +25,9 @@
           </li>
         </ul>
       </div>
+      <div class="loading-container">
+        <loading class="" v-show="!discList.length"></loading>
+      </div>
     </div>
   </div>
 </template>
@@ -34,6 +37,7 @@ import { getBannerList } from "@/api/recommend";
 import { getDiscList } from "@/api/recommend";
 import { ERR_OK } from "@/api/config";
 import Slider from "@/base/slider/slider";
+import Loading from "@/base/loading/loading";
 export default {
   name: "Recommend",
   data() {
@@ -43,7 +47,8 @@ export default {
     };
   },
   components: {
-    Slider
+    Slider,
+    Loading
   },
   created() {
     this._getBannerList();
@@ -121,6 +126,12 @@ export default {
           }
         }
       }
+    }
+    .loading-container {
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      transform: translateY(-50%);
     }
   }
 }
