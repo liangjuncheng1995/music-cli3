@@ -4,6 +4,9 @@ import router from './router'
 import store from './store'
 import VueLazyLoad from 'vue-lazyload'
 
+// import './vant' //引用vant
+ 
+
 import '@/assets/styles/reset.css'
 
 Vue.use(VueLazyLoad,{
