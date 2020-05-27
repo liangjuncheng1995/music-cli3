@@ -4,7 +4,7 @@
       <li v-for="group in data" class="list-group" ref="listGroup" :key="group.title">
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
-          <li class="list-group-item" v-for="item in group.items" :key="item.id">
+          <li @click="selectItem(item)" class="list-group-item" v-for="item in group.items" :key="item.id">
             <img v-lazy="item.avatar" class="avatar" alt="">
             <span class="name">{{item.name}}</span>
           </li>
@@ -86,6 +86,9 @@ export default {
     scroll(e) {
       this.scrollY = -e.target.scrollTop;
     },
+    selectItem(item) {
+      this.$emit('select', item)
+    },
     onShortcutTouchStart(e) {
       let anchorIndex = getData(e.target, "index");
       let firstTouch = e.touches[0];
@@ -154,8 +157,6 @@ export default {
 
         if (-newY >= height1 && -newY < height2) {
           this.currentIndex = i;
-          console.log(newY)
-          console.log(height2)
           this.diff = height2 + newY;
           return;
         }
@@ -166,7 +167,7 @@ export default {
     diff(newVal) {
       let fixedTop =
         newVal > 0 && newVal < TITLE_HEIGHT ? newVal - TITLE_HEIGHT : 0;
-      if (this.fixedTop === fixedTop) {
+      if (this.fixedTop === fixedTop) {//避免在fixedTop 为 0 的时候更改transform的属性
         return;
       }
       this.fixedTop = fixedTop;
