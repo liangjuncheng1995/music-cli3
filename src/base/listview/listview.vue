@@ -1,5 +1,5 @@
 <template>
-  <div class="listview" @scroll="scroll" ref="listview">
+  <div class="listview" :style="'height:' + containerH + 'px'" @scroll="scroll" ref="listview">
     <ul >
       <li v-for="group in data" class="list-group" ref="listGroup" :key="group.title">
         <h2 class="list-group-title">{{group.title}}</h2>
@@ -39,6 +39,7 @@ export default {
   created() {
     this.touch = {};
     this.listHeight = [];
+    this.containerH = window.innerHeight - (44 + 44)
   },
   props: {
     data: {
@@ -65,6 +66,12 @@ export default {
     }
   },
   mounted() {
+    window.addEventListener("resize", () => {
+      if (!this.containerH) {
+        return;
+      }
+      this._resetContainerHeight()
+    });
   },
   data() {
     return {
@@ -76,6 +83,9 @@ export default {
   },
 
   methods: {
+    _resetContainerHeight() {
+      this.containerH = window.innerHeight - (44 + 44)
+    },
     filter(data) {
       var Arr = [];
       data.forEach((item, index) => {
@@ -87,7 +97,7 @@ export default {
       this.scrollY = -e.target.scrollTop;
     },
     selectItem(item) {
-      this.$emit('select', item)
+      this.$emit("select", item);
     },
     onShortcutTouchStart(e) {
       let anchorIndex = getData(e.target, "index");
@@ -119,7 +129,7 @@ export default {
         index = this.listHeight.length - 2;
       }
       this.scrollY = -this.listHeight[index];
-      this.$refs.listview.scrollTop = - this.scrollY
+      this.$refs.listview.scrollTop = -this.scrollY;
     },
     _calculateHeight() {
       this.lineHeight = [];
@@ -149,11 +159,10 @@ export default {
         return;
       }
       //在中间部分滚动
-      
+
       for (let i = 0; i < listHeight.length - 1; i++) {
         let height1 = listHeight[i];
         let height2 = listHeight[i + 1];
-
 
         if (-newY >= height1 && -newY < height2) {
           this.currentIndex = i;
@@ -167,7 +176,8 @@ export default {
     diff(newVal) {
       let fixedTop =
         newVal > 0 && newVal < TITLE_HEIGHT ? newVal - TITLE_HEIGHT : 0;
-      if (this.fixedTop === fixedTop) {//避免在fixedTop 为 0 的时候更改transform的属性
+      if (this.fixedTop === fixedTop) {
+        //避免在fixedTop 为 0 的时候更改transform的属性
         return;
       }
       this.fixedTop = fixedTop;

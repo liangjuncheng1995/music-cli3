@@ -8,6 +8,7 @@ import VueLazyLoad from 'vue-lazyload'
  
 
 import '@/assets/styles/reset.css'
+import '@/assets/icon/iconfont.css'
 
 Vue.use(VueLazyLoad,{
   loading:require('@/assets/img/loading.png')

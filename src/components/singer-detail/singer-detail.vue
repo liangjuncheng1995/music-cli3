@@ -1,6 +1,6 @@
 <template>
   <div class="singer-detail">
-    <music-list></music-list>
+    <music-list :songs="songs" :title="title" :bgImage="bgImage"></music-list>
   </div>
 </template>
 
@@ -14,24 +14,32 @@
   import {
     ERR_OK
   } from '@/api/config'
+  import {
+    createSong
+  } from '@/common/js/song'
   import MusicList from "@/components/music-list/music-list"
   export default {
+    data() {
+      return {
+        songs: []
+      }
+    },
     computed: {
+      title() {
+        return this.singer.name
+      },
+      bgImage() {
+        return this.singer.avatar
+      },
       ...mapGetters([
         'singer'
       ])
     },
     created() {
       this._getDetail();
-      console.log(this.singer)
     },
     components: {
       MusicList
-    },
-    data() {
-      return {
-        
-      }
     },
     methods: {
       _getDetail() {
@@ -41,9 +49,21 @@
         }
         getSingerDetail(this.singer.id).then((res) => {
           if(res.code === ERR_OK) {
-            console.log(res.data.list)
+            // console.log(res.data.list)
+            this.songs = this._normalizeSongs(res.data.list)
           }
         })
+      },
+      _normalizeSongs(list) {//组装歌曲列表的数据
+        let ret = []
+        list.forEach((item) => {
+          // let {musicData} = item
+          let musicData = item.musicData
+          if(musicData.songid && musicData.albummid) {
+            ret.push(createSong(musicData))
+          }
+        })
+        return ret
       }
     }
   };

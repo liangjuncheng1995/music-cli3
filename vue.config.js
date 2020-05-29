@@ -18,6 +18,7 @@ module.exports = {
             sass: {
                 data: `
               @import "@/assets/styles/theme.scss";
+              @import "@/assets/styles/mixin.scss";
             `
             }
         }
