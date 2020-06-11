@@ -185,23 +185,31 @@ export default {
       }
       this.songReady = false
     },
+    async next() {
+      if(!this.songReady) {
+        console.log("地址错误，下一首歌曲获取不了")
+        return
+      }
+      let index = this.currentIndex + 1
+      if(index === this.playlist.length) {
+        index == 0
+      }
+      await this.selectPrev({
+        list: this.playlist,
+        index
+      })
+      this.setCurrentIndex(index)
+      if(!this.playing) {
+        this.togglePlaying()
+      }
+      this.songReady = false
+    },
     togglePlaying() {
       if(!this.songReady) {
         return 
       }
       console.log("点击暂停和播放")
       this.setPlayingState(!this.playing)
-    },
-    next() {
-      if(!this.songReady) {
-        console.log("地址错误，下一首歌曲获取不了")
-        return
-      }
-      let index = this.currentIndex + 1
-      debugger
-      if(index === this.playlist.length) {
-
-      }
     },
     ready() {
       this.songReady = true
