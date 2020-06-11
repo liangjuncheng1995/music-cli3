@@ -233,7 +233,7 @@ export default {
     position: fixed;
     z-index: 30;
     right: 0;
-    top: 60%;
+    top: 55%;
     transform: translateY(-50%);
     width: 20px;
     padding: 20px 0;

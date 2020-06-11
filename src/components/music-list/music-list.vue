@@ -7,7 +7,7 @@
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-container">
         <div class="play" ref="playBtn" v-show="songs.length > 0">
-          <i class="icon iconfont icon-bofang"></i>
+          <i class="icon iconfont icon-play"></i>
           <span class="text">随机播放</span>
         </div>
       </div>
@@ -31,7 +31,7 @@
 <script>
 import SongList from "@/base/song-list/song-list";
 import loading from "@/base/loading/loading";
-import {mapActions} from "vuex"
+import {mapActions, mapMutations} from "vuex"
 
 const RESERVED_HEIGHT = 40;
 export default {
@@ -83,8 +83,7 @@ export default {
     },
     ...mapActions([
       'selectPlay'
-    ])
-
+    ]),
   },
   watch: {
     scrollY(newY) {
@@ -182,7 +181,7 @@ export default {
         border-radius: 100px;
         font-size: 0;
 
-        .icon-bofang {
+        .icon-play {
           display: inline-block;
           vertical-align: middle;
           margin-right: 6px;
