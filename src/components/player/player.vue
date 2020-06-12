@@ -25,6 +25,15 @@
         </div> 
 
         <div class="bottom">
+          <!-- 进度条 -->
+          <div class="progress-container">
+            <span class="time time-l"></span>
+            <div class="progress-bar-container">
+              <progress-bar></progress-bar>
+            </div>
+            <span class="time time-r"></span>
+          </div>
+          <!-- 操作控件 -->
           <div class="operators">
             <div class="icon1 i-left">
               <i class="icon iconfont icon-sequence-play"></i>
@@ -71,7 +80,9 @@
 import animations from "create-keyframe-animation";
 import { mapGetters, mapMutations, mapActions } from "vuex";
 import { prefixStyle } from "@/common/js/dom";
-import { debuglog } from 'util';
+import { debuglog } from "util";
+import ProgressBar from "@/base/progress-bar/progress-bar";
+
 const transform = prefixStyle("transform");
 export default {
   data() {
@@ -94,8 +105,8 @@ export default {
         : "icon iconfont icon-mini-play";
     },
     disableCls() {
-      console.log("歌曲状态：")
-      console.log(this.songReady)
+      console.log("歌曲状态：");
+      console.log(this.songReady);
       return this.songReady ? "" : "disable";
     },
     ...mapGetters([
@@ -105,6 +116,9 @@ export default {
       "playing",
       "currentIndex" //获取正在播放歌曲的索引
     ])
+  },
+  components: {
+    ProgressBar
   },
   methods: {
     back() {
@@ -167,58 +181,60 @@ export default {
     },
     // playIcon() {},
     async prev() {
-      if(!this.songReady) {
-        console.log("上一首的地址错误")
-        return
+      if (!this.songReady) {
+        console.log("上一首的地址错误");
+        return;
       }
-      let index = this.currentIndex - 1
-      if(index === -1) {//如果是从第一首歌曲点击了上一首，应该跳转到播放歌曲列表的最后一首
-        index = this.playlist.length - 1
+      let index = this.currentIndex - 1;
+      if (index === -1) {
+        //如果是从第一首歌曲点击了上一首，应该跳转到播放歌曲列表的最后一首
+        index = this.playlist.length - 1;
       }
       await this.selectPrev({
         list: this.playlist,
         index
-      })
-      this.setCurrentIndex(index)
-      if(!this.playing) {//如果播放的状态是暂停的时候，应该再次启动播放的按钮
-        this.togglePlaying()
+      });
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        //如果播放的状态是暂停的时候，应该再次启动播放的按钮
+        this.togglePlaying();
       }
-      this.songReady = false
+      this.songReady = false;
     },
     async next() {
-      if(!this.songReady) {
-        console.log("地址错误，下一首歌曲获取不了")
-        return
+      if (!this.songReady) {
+        console.log("地址错误，下一首歌曲获取不了");
+        return;
       }
-      let index = this.currentIndex + 1
-      if(index === this.playlist.length) {
-        index == 0
+      let index = this.currentIndex + 1;
+      if (index === this.playlist.length) {
+        index == 0;
       }
       await this.selectPrev({
         list: this.playlist,
         index
-      })
-      this.setCurrentIndex(index)
-      if(!this.playing) {
-        this.togglePlaying()
+      });
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        this.togglePlaying();
       }
-      this.songReady = false
+      this.songReady = false;
     },
     togglePlaying() {
-      if(!this.songReady) {
-        return 
+      if (!this.songReady) {
+        return;
       }
-      console.log("点击暂停和播放")
-      this.setPlayingState(!this.playing)
+      console.log("点击暂停和播放");
+      this.setPlayingState(!this.playing);
     },
     ready() {
-      this.songReady = true
-      console.log(this.currentSong.url)
-      console.log("播放的歌曲的地址正确")
+      this.songReady = true;
+      console.log(this.currentSong.url);
+      console.log("播放的歌曲的地址正确");
     },
     error() {
-      this.songReady = true
-      console.log("地址错误，需要更换地址")
+      this.songReady = true;
+      console.log("地址错误，需要更换地址");
     },
 
     ...mapMutations({
@@ -226,20 +242,18 @@ export default {
       setPlayingState: "SET_PLAYING_STATE",
       setCurrentIndex: "SET_CURRENT_INDEX"
     }),
-    ...mapActions([
-      'selectPrev'
-    ])
+    ...mapActions(["selectPrev"])
   },
   watch: {
     currentSong() {
       this.$nextTick(() => {
-        this.$refs.audio.play()
-      })
+        this.$refs.audio.play();
+      });
     },
     playing(newPlaying) {
       this.$nextTick(() => {
-        newPlaying ? this.$refs.audio.play() : this.$refs.audio.pause()
-      })
+        newPlaying ? this.$refs.audio.play() : this.$refs.audio.pause();
+      });
     }
   }
 };
@@ -370,6 +384,29 @@ export default {
       position: absolute;
       bottom: 50px;
       width: 100%;
+      .progress-container {
+        display: flex;
+        align-items: center;
+        width: 80%;
+        margin: 0px auto;
+        padding: 10px 0;
+        .time {
+          color: #fff;
+          font-size: 12px;
+          flex: 0 0 30px;
+          line-height: 30px;
+          width: 30px;
+        }
+        .time-l {
+          text-align: left;
+        }
+        .time-r {
+          text-align: right;
+        }
+        .progress-bar-container {
+          flex: 1;
+        }
+      }
       .operators {
         display: flex;
         align-items: center;
