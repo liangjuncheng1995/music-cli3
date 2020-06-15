@@ -27,11 +27,11 @@
         <div class="bottom">
           <!-- 进度条 -->
           <div class="progress-container">
-            <span class="time time-l"></span>
+            <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-container">
               <progress-bar></progress-bar>
             </div>
-            <span class="time time-r"></span>
+            <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <!-- 操作控件 -->
           <div class="operators">
@@ -87,7 +87,8 @@ const transform = prefixStyle("transform");
 export default {
   data() {
     return {
-      songReady: false
+      songReady: false,
+      currentTime: 0
     };
   },
   computed: {
@@ -231,6 +232,23 @@ export default {
       this.songReady = true;
       console.log(this.currentSong.url);
       console.log("播放的歌曲的地址正确");
+    },
+    undateTime(e) {
+      this.currentTime = e.target.currentTime
+    },
+    format(interval) {
+      interval = interval | 0
+      const minute = interval / 60 | 0
+      const seconds = this._pad(interval % 60)
+      return `${minute}:${seconds}`
+    },
+    _pad(num, n = 2) {
+      let len = num.toString().length
+      while(len<n) {
+        num = '0' + num
+        len ++ 
+      }
+      return num
     },
     error() {
       this.songReady = true;
