@@ -29,7 +29,7 @@
           <div class="progress-container">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-container">
-              <progress-bar></progress-bar>
+              <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
             </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
@@ -64,7 +64,9 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i @click.stop="togglePlaying" :class="miniIcon" id="minizi"></i>
+          <progress-circle :radius="radius" :percent="percent">
+            <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon" id="minizi"></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon iconfont icon-playlist"></i>
@@ -82,13 +84,15 @@ import { mapGetters, mapMutations, mapActions } from "vuex";
 import { prefixStyle } from "@/common/js/dom";
 import { debuglog } from "util";
 import ProgressBar from "@/base/progress-bar/progress-bar";
+import ProgressCircle from "@/base/progress-circle/progress-circle";
 
 const transform = prefixStyle("transform");
 export default {
   data() {
     return {
       songReady: false,
-      currentTime: 0
+      currentTime: 0,
+      radius: 32
     };
   },
   computed: {
@@ -110,6 +114,9 @@ export default {
       console.log(this.songReady);
       return this.songReady ? "" : "disable";
     },
+    percent() {
+      return this.currentTime / this.currentSong.duration; //当前歌曲的播放时间/当前歌曲的总时长 = 播放的百分比
+    },
     ...mapGetters([
       "playlist",
       "currentSong", //需要播放的歌曲数据
@@ -119,7 +126,8 @@ export default {
     ])
   },
   components: {
-    ProgressBar
+    ProgressBar,
+    ProgressCircle
   },
   methods: {
     back() {
@@ -234,22 +242,23 @@ export default {
       console.log("播放的歌曲的地址正确");
     },
     undateTime(e) {
-      this.currentTime = e.target.currentTime
+      this.currentTime = e.target.currentTime;
     },
     format(interval) {
-      interval = interval | 0
-      const minute = interval / 60 | 0
-      const seconds = this._pad(interval % 60)
-      return `${minute}:${seconds}`
+      interval = interval | 0;
+      const minute = (interval / 60) | 0;
+      const seconds = this._pad(interval % 60);
+      return `${minute}:${seconds}`;
     },
     _pad(num, n = 2) {
-      let len = num.toString().length
-      while(len<n) {
-        num = '0' + num
-        len ++ 
+      let len = num.toString().length;
+      while (len < n) {
+        num = "0" + num;
+        len++;
       }
-      return num
+      return num;
     },
+    onProgressBarChange() {},
     error() {
       this.songReady = true;
       console.log("地址错误，需要更换地址");
@@ -502,8 +511,16 @@ export default {
         font-size: 30px;
       }
       #minizi {
-        font-size: 35px !important;
-        color: $theme-color-a;
+        font-size: 37px !important;
+        color: $theme-color-a-3;
+      }
+      .icon-mini {
+        // position: absolute;
+        // left: 0.5px;
+        // top: 0px;
+        position: absolute;
+        left: -2.4px;
+        top: -1.5px;
       }
       .icon-playlist {
         font-size: 30px;

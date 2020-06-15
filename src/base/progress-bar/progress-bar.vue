@@ -16,6 +16,8 @@
 </template>
 
 <script>
+
+const progressBtnWidth = 16
 export default {
   props: {
     percent: {
@@ -27,7 +29,20 @@ export default {
     progressClick() {},
     progressTouchStart() {},
     progressTouchMove() {},
-    progressTouchEnd() {}
+    progressTouchEnd() {},
+    _offset(offsetWidth) {
+      this.$refs.progress.style.width = `${offsetWidth}px`
+      this.$refs.progressBtn.style.transform = `translate3d(${offsetWidth}px,0,0)`
+    }
+  },
+  watch: {
+    percent(newPercent) {
+      if (newPercent >=0 && !this.initiated) {
+        const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
+        const offsetWidth = newPercent * barWidth
+        this._offset(offsetWidth)
+      }
+    }
   }
 };
 </script>
