@@ -71,7 +71,7 @@
         </div>
       </div>
     </transition>   
-    <audio ref='audio' :src="currentSong.url" @canplay="ready"  @error="error"></audio>
+    <audio ref='audio' :src="currentSong.url" @canplay="ready"  @error="error" @timeupdate="undateTime"></audio>
     <!-- @canplay="ready" play="ready"  -->
   </div>
 </template>
