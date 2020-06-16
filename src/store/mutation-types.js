@@ -7,3 +7,7 @@ export const SET_CURRENT_INDEX = "SET_CURRENT_INDEX" // 保存点击了哪一首
 export const SET_FULL_SCREEN = "SET_FULL_SCREEN" //设置迷你播放器的展示和隐藏
 
 export const SET_PLAYING_STATE = "SET_PLAYING_STATE" //设置播放的状态
+
+export const SET_PLAY_MODE = "SET_PLAY_MODE" //设置列表的播放状态
+
+export const SET_SEQUENCE_LIST = "SET_SEQUENCE_LIST" //设置播放模式的循环的歌曲列表

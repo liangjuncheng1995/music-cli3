@@ -35,8 +35,8 @@
           </div>
           <!-- 操作控件 -->
           <div class="operators">
-            <div class="icon1 i-left">
-              <i class="icon iconfont icon-sequence-play"></i>
+            <div class="icon1 i-left" @click="changeMode">
+              <i class="icon iconfont" :class="iconMode"></i>
             </div>
             <div class="icon1 i-left" :class="disableCls">
               <i @click="prev" class="icon iconfont icon-prev-song"></i>
@@ -73,7 +73,7 @@
         </div>
       </div>
     </transition>   
-    <audio ref='audio' :src="currentSong.url" @canplay="ready"  @error="error" @timeupdate="undateTime"></audio>
+    <audio ref='audio' :src="currentSong.url" @canplay="ready" @ended="end"  @error="error" @timeupdate="undateTime"></audio>
     <!-- @canplay="ready" play="ready"  -->
   </div>
 </template>
@@ -85,6 +85,8 @@ import { prefixStyle } from "@/common/js/dom";
 import { debuglog } from "util";
 import ProgressBar from "@/base/progress-bar/progress-bar";
 import ProgressCircle from "@/base/progress-circle/progress-circle";
+import {playMode} from "@/common/js/config"
+import {shuffle} from "@/common/js/util"
 
 const transform = prefixStyle("transform");
 export default {
@@ -104,6 +106,9 @@ export default {
         ? "icon iconfont icon-time-out"
         : "icon iconfont icon-play";
     },
+    iconMode() { //计算切换播放模式的icon
+      return this.mode === playMode.sequence ? 'icon-sequence-play' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
+    },
     miniIcon() {
       return this.playing
         ? "icon iconfont icon-mini-pause"
@@ -122,7 +127,9 @@ export default {
       "currentSong", //需要播放的歌曲数据
       "fullScreen", //获取模拟播放器的展示状态
       "playing",
-      "currentIndex" //获取正在播放歌曲的索引
+      "mode", //获取播放的模式
+      "currentIndex", //获取正在播放歌曲的索引
+      "sequenceList" //获取循环的列表
     ])
   },
   components: {
@@ -258,16 +265,51 @@ export default {
       }
       return num;
     },
-    onProgressBarChange() {},
+    onProgressBarChange(percent) {
+      this.$refs.audio.currentTime = this.currentSong.duration * percent
+      if(!this.playing) {
+        this.togglePlaying()
+      }
+    },
+    changeMode() {//更改播放列表的状态
+      const mode = (this.mode + 1) % 3
+      this.setPlayMode(mode)
+      let list = null 
+      if(mode === playMode.random) {
+        list = shuffle(this.sequenceList)
+      } else {
+        list = this.sequenceList
+      }
+      this._resetCurrentIndex(list)
+      this.setPlayList(list)
+    },
+    _resetCurrentIndex(list) {
+      let index = list.findIndex((item) => {
+        return item.id === this.currentSong.id
+      })
+      this.setCurrentIndex(index)
+    },
     error() {
       this.songReady = true;
       console.log("地址错误，需要更换地址");
     },
-
+    end() {
+      if(this.mode === playMode.loop)  {
+        this.loop()
+      } else {
+        this.next()
+      }
+    },
+    loop() {
+      this.$refs.audio.currentTime = 0
+      this.$refs.audio.play()
+    },
     ...mapMutations({
       setFullScreen: "SET_FULL_SCREEN",
       setPlayingState: "SET_PLAYING_STATE",
-      setCurrentIndex: "SET_CURRENT_INDEX"
+      setCurrentIndex: "SET_CURRENT_INDEX",
+      setPlayMode: "SET_PLAY_MODE",
+      setPlayList: "SET_PLAYLIST"
     }),
     ...mapActions(["selectPrev"])
   },
