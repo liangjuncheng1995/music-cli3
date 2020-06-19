@@ -129,6 +129,7 @@ export default {
         index = this.listHeight.length - 2;
       }
       this.scrollY = -this.listHeight[index];
+      console.log(this.scrollY)
       this.$refs.listview.scrollTop = -this.scrollY;
     },
     _calculateHeight() {

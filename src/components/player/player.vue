@@ -14,17 +14,37 @@
           <h2 class="subtitle" v-html="currentSong.singer"></h2>
         </div>
 
-        <div class="middle">
-          <div class="middle-l">
+        <div class="middle" @touchstart="middleTouchStart" @touchmove="middleTouchMove" @touchend="middleTouchEnd">
+          <div class="middle-l" ref="middleL">
             <div class="cd-container" ref="cdContainer">
               <div class="cd" :class="cdCls">
                 <img class="image" :src="currentSong.image" alt="">
               </div>
             </div>
+            <div class="playing-lyric-container">
+              <div class="playing-lyric">{{playingLyric}}</div>
+            </div> 
           </div>
+
+          <div @scroll="scroll" class="middle-r" ref="lyricList">
+            <div class="lyric-container" ref="lyricContainer" style="transition-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+          transition-duration: 1000ms;">
+              <div v-if="currentLyric">
+                <p ref="lyricLine" class="text" :key="index" v-for="(line, index) in currentLyric.lines"
+                   :class="{'current': currentLineNum === index}"
+                >
+                  {{line.txt}}
+                </p>
+              </div>
+            </div>
+          </div> 
         </div> 
 
         <div class="bottom">
+          <div class="dot-container">
+            <span class="dot" :class="{'active': currentShow === 'cd'}"></span>
+            <span class="dot" :class="{'active': currentShow === 'lyric'}"></span>
+          </div>
           <!-- 进度条 -->
           <div class="progress-container">
             <span class="time time-l">{{format(currentTime)}}</span>
@@ -82,19 +102,25 @@
 import animations from "create-keyframe-animation";
 import { mapGetters, mapMutations, mapActions } from "vuex";
 import { prefixStyle } from "@/common/js/dom";
-import { debuglog } from "util";
+// import { debuglog } from "util";
 import ProgressBar from "@/base/progress-bar/progress-bar";
 import ProgressCircle from "@/base/progress-circle/progress-circle";
-import {playMode} from "@/common/js/config"
-import {shuffle} from "@/common/js/util"
+import { playMode } from "@/common/js/config";
+import { shuffle } from "@/common/js/util";
+import Lyric from "lyric-parser";
 
 const transform = prefixStyle("transform");
+const transitionDuration = prefixStyle("transitionDuration");
 export default {
   data() {
     return {
       songReady: false,
       currentTime: 0,
-      radius: 32
+      radius: 32,
+      currentLyric: null, //全部歌词
+      playingLyric: "", //正在播放的歌词
+      currentLineNum: 0,
+      currentShow: "cd"
     };
   },
   computed: {
@@ -106,8 +132,11 @@ export default {
         ? "icon iconfont icon-time-out"
         : "icon iconfont icon-play";
     },
-    iconMode() { //计算切换播放模式的icon
-      return this.mode === playMode.sequence ? 'icon-sequence-play' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
+    iconMode() {
+      //计算切换播放模式的icon
+      return this.mode === playMode.sequence
+        ? "icon-sequence-play"
+        : this.mode === playMode.loop ? "icon-loop" : "icon-random";
     },
     miniIcon() {
       return this.playing
@@ -131,6 +160,9 @@ export default {
       "currentIndex", //获取正在播放歌曲的索引
       "sequenceList" //获取循环的列表
     ])
+  },
+  created() {
+    this.touch = {};
   },
   components: {
     ProgressBar,
@@ -266,43 +298,171 @@ export default {
       return num;
     },
     onProgressBarChange(percent) {
-      this.$refs.audio.currentTime = this.currentSong.duration * percent
-      if(!this.playing) {
-        this.togglePlaying()
+      this.$refs.audio.currentTime = this.currentSong.duration * percent;
+      if (!this.playing) {
+        this.togglePlaying();
       }
     },
-    changeMode() {//更改播放列表的状态
-      const mode = (this.mode + 1) % 3
-      this.setPlayMode(mode)
-      let list = null 
-      if(mode === playMode.random) {
-        list = shuffle(this.sequenceList)
+    changeMode() {
+      //更改播放列表的状态
+      const mode = (this.mode + 1) % 3;
+      this.setPlayMode(mode);
+      let list = null;
+      if (mode === playMode.random) {
+        list = shuffle(this.sequenceList);
       } else {
-        list = this.sequenceList
+        list = this.sequenceList;
       }
-      this._resetCurrentIndex(list)
-      this.setPlayList(list)
+      this._resetCurrentIndex(list);
+      this.setPlayList(list);
+    },
+    async getLyric() {
+      var resultLyric = await this.currentSong.getLyric();
+      if (resultLyric != "no lyric") {
+        this.currentLyric = new Lyric(resultLyric, this.handleLyric);
+        console.log(this.currentLyric)
+        if (this.playing) {
+          this.currentLyric.play();
+        }
+      } else {
+        this.currentLyric = null;
+        this.playingLyric = "";
+        this.currentLineNum = 0;
+      }
+    },
+    handleLyric({ lineNum, txt }) {//操作正在播放的歌词
+      this.currentLineNum = lineNum; //定位正在播放的歌词
+      if(lineNum > 5) { //监听移动歌词的列表,//如果lineNum大于5，为了让currentLine保持在中间，滚动到lineNum-5的元素上
+        let lineEl = this.$refs.lyricLine[lineNum - 5] //获取调整滚动条的位置
+        console.log(lineNum)
+        console.log(lineEl)
+        let unit = 32
+        let num = lineNum * unit - (5 * unit)
+        // lineEl.scrollIntoView()
+        var el = this.$refs.lyricList
+        // this.ScrollTopsa(num,200)
+        this.$refs.lyricList.scrollTo({ 
+          top: num, 
+          behavior: "smooth" 
+        });
+        // this.$refs.lyricList.scrollTop = 0
+        // this.$refs.lyricContainer.style.transform = `translate(0,${-num}px)`;
+      } else {
+        this.$refs.lyricList.scrollTop = 0
+      }
+      this.playingLyric = txt;
+    },
+    ScrollTopsa(number,time) {
+      if(!time) {
+        this.$refs.lyricList = number //设置节点传进来的需要滚动的位置
+        return number
+      }
+      const spacingTime = 20
+      let spacingIndex = time
+      let nowTop = this.$refs.lyricList.scrollTop //获取当前节点滚动条的位置
+      let everTop = (number - nowTop) / spacingIndex // 计算每次（每个单位时间）滑动的距离
+      let scrollTimer = setInterval(() => {
+        if(spacingIndex > 0) {
+          spacingIndex --;
+          this.ScrollTopsa(nowTop += everTop)
+        } else {
+          clearInterval(scrollTimer)
+        }
+      },spacingTime)
+    },
+    middleTouchStart(e) {
+      //存储点击的坐标位置
+      this.touch.initiated = true;
+      const touch = e.touches[0];
+      this.touch.startX = touch.pageX;
+      this.touch.startY = touch.pageY;
+    },
+    middleTouchMove(e) {
+      if (!this.touch.initiated) {
+        return;
+      }
+      const touch = e.touches[0];
+      const deltaX = touch.pageX - this.touch.startX; //左滑 小于 0， 右滑大于0
+      const deltaY = touch.pageY - this.touch.startY;
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        //如果y轴移动的距离大于x轴的距离 则取消操作
+        return;
+      }
+      const left = this.currentShow === "cd" ? 0 : -window.innerWidth;
+      //cd模板左滑 ， offsetWidth为 deltaX, 为负数 ， cd模板左滑 ， offsetWidth为 0 deltaX, 为正数
+      const offsetWidth = Math.min(
+        0,
+        Math.max(-window.innerWidth, left + deltaX)
+      );
+      this.touch.percent = Math.abs(offsetWidth / window.innerWidth); //计算滑动的百分比
+
+      this.$refs.middleL.style[transitionDuration] = 0; //消除过渡的时间
+      this.$refs.lyricList.style.transitionDuration = 0;
+      this.$refs.lyricList.style.transform = `translate3d(${offsetWidth}px,0,0)`;
+      this.$refs.middleL.style.opacity = 1 - this.touch.percent; //根据移动距离改变cd页面的透明度
+    },
+    middleTouchEnd(e) {
+      let offsetWidth;
+      let opacity;
+
+      const touch = e.changedTouches[0];
+      const deltaX = touch.pageX - this.touch.startX; //左滑 小于 0， 右滑大于0
+      const deltaY = touch.pageY - this.touch.startY;
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        //如果y轴移动的距离大于x轴的距离 则取消操作
+        return;
+      }
+      if (this.currentShow === "cd") {
+        //如果在cd页面，向左滑动超过10%就跳转到lyric页面
+        if (this.touch.percent > 0.1) {
+          offsetWidth = -window.innerWidth;
+          opacity = 0;
+          this.currentShow = "lyric";
+        } else {
+          offsetWidth = 0;
+          this.currentShow = "cd";
+          opacity = 1;
+        }
+      } else {
+        //在lyric 页面，向右滑动比例低于90%，就跳转到cd页面
+        if (this.touch.percent < 0.9) {
+          offsetWidth = 0;
+          this.currentShow = "cd";
+          opacity = 1;
+        } else {
+          offsetWidth = -window.innerWidth;
+          opacity = 0;
+        }
+      }
+      this.$refs.middleL.style[transitionDuration] = `300ms`;
+      this.$refs.lyricList.style.transitionDuration = `300ms`; //设置过度时间300ms
+      this.$refs.lyricList.style.transform = `translate3d(${offsetWidth}px,0,0)`;
+      this.$refs.middleL.style.opacity = opacity;
+
+      this.touch.initiated = false;
     },
     _resetCurrentIndex(list) {
-      let index = list.findIndex((item) => {
-        return item.id === this.currentSong.id
-      })
-      this.setCurrentIndex(index)
+      let index = list.findIndex(item => {
+        return item.id === this.currentSong.id;
+      });
+      this.setCurrentIndex(index);
     },
     error() {
       this.songReady = true;
       console.log("地址错误，需要更换地址");
     },
     end() {
-      if(this.mode === playMode.loop)  {
-        this.loop()
+      if (this.mode === playMode.loop) {
+        this.loop();
       } else {
-        this.next()
+        this.next();
       }
     },
     loop() {
-      this.$refs.audio.currentTime = 0
-      this.$refs.audio.play()
+      this.$refs.audio.currentTime = 0;
+      this.$refs.audio.play();
+    },
+    scroll(e) {
     },
     ...mapMutations({
       setFullScreen: "SET_FULL_SCREEN",
@@ -317,6 +477,7 @@ export default {
     currentSong() {
       this.$nextTick(() => {
         this.$refs.audio.play();
+        this.getLyric(); //获取歌词
       });
     },
     playing(newPlaying) {
@@ -447,12 +608,64 @@ export default {
             }
           }
         }
+        .playing-lyric-container {
+          width: 80%;
+          margin: 30px auto 0 auto;
+          overflow: hidden;
+          text-align: center;
+          .playing-lyric {
+            height: 20px;
+            line-height: 20px;
+            font-size: 14px;
+            color: $theme-color-bold;
+          }
+        }
+      }
+      .middle-r {
+        display: inline-block;
+        vertical-align: top;
+        width: 100%;
+        height: 100%;
+        // overflow: hidden;
+        overflow-y: scroll;
+        .lyric-container {
+          width: 80%;
+          margin: 0 auto;
+          overflow: hidden;
+          text-align: center;
+          .text {
+            line-height: 32px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+          }
+          .current {
+            color: $theme-color-bold;
+          }
+        }
       }
     }
     .bottom {
       position: absolute;
       bottom: 50px;
       width: 100%;
+      .dot-container {
+        text-align: center;
+        font-size: 0;
+        .dot {
+          display: inline-block;
+          vertical-align: middle;
+          margin: 0 4px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.5);
+        }
+        .active {
+          width: 20px;
+          border-radius: 5px;
+          background: rgba(255, 255, 255, 0.8);
+        }
+      }
       .progress-container {
         display: flex;
         align-items: center;
