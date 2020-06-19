@@ -32,9 +32,11 @@
 import SongList from "@/base/song-list/song-list";
 import loading from "@/base/loading/loading";
 import {mapActions, mapMutations} from "vuex"
+import {playlistMixin} from '@/common/js/mixin'
 
 const RESERVED_HEIGHT = 40;
 export default {
+  mixins: [playlistMixin],
   props: {
     bgImage: {
       type: String,
@@ -69,6 +71,10 @@ export default {
     this.$refs.list.style.top = `${this.$refs.bgImage.clientHeight}px`;
   },
   methods: {
+    handlePlaylist(playlist) {
+      const bottom = playlist.length > 0 ? '60px' : ''
+      this.$refs.list.style.bottom = bottom
+    },
     back() {
       this.$router.back();
     },

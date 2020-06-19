@@ -27,16 +27,17 @@
           </div>
 
           <div @scroll="scroll" class="middle-r" ref="lyricList">
-            <div class="lyric-container" ref="lyricContainer" style="transition-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
-          transition-duration: 1000ms;">
-              <div v-if="currentLyric">
-                <p ref="lyricLine" class="text" :key="index" v-for="(line, index) in currentLyric.lines"
-                   :class="{'current': currentLineNum === index}"
-                >
-                  {{line.txt}}
-                </p>
+            <mescroll-vue hardwareClass="mescroll-hardware" :down="mescrollDown" ref="mescroll" @init="mescrollInit">
+              <div class="lyric-container" ref="lyricContainer">
+                <div v-if="currentLyric">
+                  <p ref="lyricLine" class="text" :key="index" v-for="(line, index) in currentLyric.lines"
+                    :class="{'current': currentLineNum === index}"
+                  >
+                    {{line.txt}}
+                  </p>
+                </div>
               </div>
-            </div>
+            </mescroll-vue>
           </div> 
         </div> 
 
@@ -105,6 +106,7 @@ import { prefixStyle } from "@/common/js/dom";
 // import { debuglog } from "util";
 import ProgressBar from "@/base/progress-bar/progress-bar";
 import ProgressCircle from "@/base/progress-circle/progress-circle";
+import MescrollVue from "mescroll.js/mescroll.vue";
 import { playMode } from "@/common/js/config";
 import { shuffle } from "@/common/js/util";
 import Lyric from "lyric-parser";
@@ -120,7 +122,12 @@ export default {
       currentLyric: null, //全部歌词
       playingLyric: "", //正在播放的歌词
       currentLineNum: 0,
-      currentShow: "cd"
+      currentShow: "cd",
+      mescroll: null,
+      mescrollDown: {
+        use: false,
+        auto: false
+      }
     };
   },
   computed: {
@@ -166,9 +173,13 @@ export default {
   },
   components: {
     ProgressBar,
-    ProgressCircle
+    ProgressCircle,
+    MescrollVue
   },
   methods: {
+    mescrollInit(mescroll) {
+      this.mescroll = mescroll;
+    },
     back() {
       this.setFullScreen(false);
     },
@@ -274,6 +285,9 @@ export default {
       }
       console.log("点击暂停和播放");
       this.setPlayingState(!this.playing);
+      if(this.currentLyric){
+        this.currentLyric.togglePlay()
+      }
     },
     ready() {
       this.songReady = true;
@@ -298,9 +312,13 @@ export default {
       return num;
     },
     onProgressBarChange(percent) {
-      this.$refs.audio.currentTime = this.currentSong.duration * percent;
+      const currentTime = this.currentSong.duration * percent;
+      this.$refs.audio.currentTime = currentTime;
       if (!this.playing) {
         this.togglePlaying();
+      }
+      if (this.currentLyric) {
+        this.currentLyric.seek(currentTime * 1000);
       }
     },
     changeMode() {
@@ -320,7 +338,6 @@ export default {
       var resultLyric = await this.currentSong.getLyric();
       if (resultLyric != "no lyric") {
         this.currentLyric = new Lyric(resultLyric, this.handleLyric);
-        console.log(this.currentLyric)
         if (this.playing) {
           this.currentLyric.play();
         }
@@ -330,45 +347,46 @@ export default {
         this.currentLineNum = 0;
       }
     },
-    handleLyric({ lineNum, txt }) {//操作正在播放的歌词
+    handleLyric({ lineNum, txt }) {
+      //操作正在播放的歌词
       this.currentLineNum = lineNum; //定位正在播放的歌词
-      if(lineNum > 5) { //监听移动歌词的列表,//如果lineNum大于5，为了让currentLine保持在中间，滚动到lineNum-5的元素上
-        let lineEl = this.$refs.lyricLine[lineNum - 5] //获取调整滚动条的位置
-        console.log(lineNum)
-        console.log(lineEl)
-        let unit = 32
-        let num = lineNum * unit - (5 * unit)
+      if (lineNum > 5) {
+        //监听移动歌词的列表,//如果lineNum大于5，为了让currentLine保持在中间，滚动到lineNum-5的元素上
+        let lineEl = this.$refs.lyricLine[lineNum - 5]; //获取调整滚动条的位置
+        let unit = 32;
+        let num = lineNum * unit - 5 * unit;
         // lineEl.scrollIntoView()
-        var el = this.$refs.lyricList
+        var el = this.$refs.lyricList;
         // this.ScrollTopsa(num,200)
-        this.$refs.lyricList.scrollTo({ 
-          top: num, 
-          behavior: "smooth" 
+        this.$refs.lyricList.scrollTo({
+          top: num,
+          behavior: "smooth"
         });
+        this.mescroll.scrollTo(num, 300);
         // this.$refs.lyricList.scrollTop = 0
         // this.$refs.lyricContainer.style.transform = `translate(0,${-num}px)`;
       } else {
-        this.$refs.lyricList.scrollTop = 0
+        this.mescroll.scrollTo(0, 300);
       }
       this.playingLyric = txt;
     },
-    ScrollTopsa(number,time) {
-      if(!time) {
-        this.$refs.lyricList = number //设置节点传进来的需要滚动的位置
-        return number
+    ScrollTopsa(number, time) {
+      if (!time) {
+        this.$refs.lyricList = number; //设置节点传进来的需要滚动的位置
+        return number;
       }
-      const spacingTime = 20
-      let spacingIndex = time
-      let nowTop = this.$refs.lyricList.scrollTop //获取当前节点滚动条的位置
-      let everTop = (number - nowTop) / spacingIndex // 计算每次（每个单位时间）滑动的距离
+      const spacingTime = 20;
+      let spacingIndex = time;
+      let nowTop = this.$refs.lyricList.scrollTop; //获取当前节点滚动条的位置
+      let everTop = (number - nowTop) / spacingIndex; // 计算每次（每个单位时间）滑动的距离
       let scrollTimer = setInterval(() => {
-        if(spacingIndex > 0) {
-          spacingIndex --;
-          this.ScrollTopsa(nowTop += everTop)
+        if (spacingIndex > 0) {
+          spacingIndex--;
+          this.ScrollTopsa((nowTop += everTop));
         } else {
-          clearInterval(scrollTimer)
+          clearInterval(scrollTimer);
         }
-      },spacingTime)
+      }, spacingTime);
     },
     middleTouchStart(e) {
       //存储点击的坐标位置
@@ -461,9 +479,11 @@ export default {
     loop() {
       this.$refs.audio.currentTime = 0;
       this.$refs.audio.play();
+      if (this.currentLyric) {
+        this.currentLyric.seek(0);
+      }
     },
-    scroll(e) {
-    },
+    scroll(e) {},
     ...mapMutations({
       setFullScreen: "SET_FULL_SCREEN",
       setPlayingState: "SET_PLAYING_STATE",
@@ -474,7 +494,14 @@ export default {
     ...mapActions(["selectPrev"])
   },
   watch: {
-    currentSong() {
+    currentSong(newSong,oldSong) {
+      if(newSong.id === oldSong.id) {//单曲的循环的时候，不需要重新请求数据
+        return 
+      }
+      if (this.currentLyric) {
+        //切换歌曲的时候，如果已经有this.currentLyric了就停止之前的
+        this.currentLyric.stop();
+      }
       this.$nextTick(() => {
         this.$refs.audio.play();
         this.getLyric(); //获取歌词
