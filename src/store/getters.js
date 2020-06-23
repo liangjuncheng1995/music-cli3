@@ -15,3 +15,7 @@ export const sequenceList = state => state.sequenceList
 export const currentSong = (state) => { //获取选中歌曲的具体数据，只能从仓库里取选歌曲列表的选中的一条数据来存储
     return state.playlist[state.currentIndex] || {}
 }
+
+export const topList = state => state.topList
+
+export const disc = state => state.disc

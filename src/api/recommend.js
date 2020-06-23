@@ -17,7 +17,7 @@ export function getRecommend() {
 export function getDiscList() {
     const url = "/musicApi/getDiscList"
 
-    const data = Object.assign({}, commonParams,{
+    const data = Object.assign({}, commonParams, {
         platform: 'yqq',
         hostUin: 0,
         sin: 0,
@@ -27,7 +27,7 @@ export function getDiscList() {
         categoryId: 10000000,
         rnd: Math.random(),
         format: 'json'
-    }) 
+    })
     return service.request({
         method: "get",
         url,
@@ -35,7 +35,27 @@ export function getDiscList() {
     })
 }
 
+
 const getBannerList = get('/musicApi/getBannerList')
+
+export function getSongList(disstid) {
+    const url = '/musicApi/getSongList'
+    const data = Object.assign({}, commonParams, {
+        disstid,
+        type: 1,
+        json: 1,
+        utf8: 1,
+        onlysong: 0,
+        platform: 'yqq',
+        hostUin: 0,
+        needNewCode: 0
+    })
+    return service.request({
+        method: "get",
+        url,
+        params: data
+    })
+}
 
 export {
     getBannerList

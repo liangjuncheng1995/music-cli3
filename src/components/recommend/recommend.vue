@@ -13,7 +13,7 @@
       <div class="recommend-list">
         <h1 class="list-title">热门歌单推荐</h1>
         <ul>
-          <li class="item" v-for="item in discList" :key="item.dissid">
+          <li @click="selectItem(item)" class="item" v-for="item in discList" :key="item.dissid">
             <div class="icon">
               <img width="60" height="60" v-lazy="item.imgurl"  alt="">
             </div> 
@@ -29,6 +29,9 @@
         <loading class="" v-show="!discList.length"></loading>
       </div>
     </div>
+    <transition name="slide">
+      <router-view></router-view>
+    </transition>
   </div>
 </template>
 
@@ -38,7 +41,8 @@ import { getDiscList } from "@/api/recommend";
 import { ERR_OK } from "@/api/config";
 import Slider from "@/base/slider/slider";
 import Loading from "@/base/loading/loading";
-import {playlistMixin} from '@/common/js/mixin'
+import { playlistMixin } from "@/common/js/mixin";
+import { mapMutations } from "vuex";
 export default {
   name: "Recommend",
   mixins: [playlistMixin],
@@ -58,8 +62,14 @@ export default {
   },
   methods: {
     handlePlaylist(playlist) {
-      const bottom = playlist.length > 0 ? '60px' : ''
-      this.$refs.recommend.style.marginBottom = bottom
+      const bottom = playlist.length > 0 ? "60px" : "";
+      this.$refs.recommend.style.marginBottom = bottom;
+    },
+    selectItem(item) {
+      this.$router.push({
+        path: `/recommend/${item.dissid}`
+      });
+      this.setDisc(item)
     },
     _getBannerList() {
       getBannerList().then(res => {
@@ -70,12 +80,14 @@ export default {
     },
     _getDiscList() {
       getDiscList().then(res => {
-        console.log(res);
         if (res.code === ERR_OK) {
           this.discList = res.data.list;
         }
       });
-    }
+    },
+    ...mapMutations({
+      setDisc: 'SET_DISC'
+    })
   }
 };
 </script>
@@ -140,5 +152,14 @@ export default {
       transform: translateY(-50%);
     }
   }
+}
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter,
+.slide-leave-to {
+  transform: translate3d(100%, 0, 0);
 }
 </style>
