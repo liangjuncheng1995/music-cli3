@@ -15,3 +15,5 @@ export const SET_SEQUENCE_LIST = "SET_SEQUENCE_LIST" //设置播放模式的循�
 export const SET_TOP_LIST = "SET_TOP_LIST" //设置排行榜的数据
 
 export const SET_DISC = "SET_DISC" //设置推荐歌曲的相关数据
+
+export const SET_SEARCH_HISTORY = "SET_SEARCH_HISTORY" //设置搜索历史的相关数据

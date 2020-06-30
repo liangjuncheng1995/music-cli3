@@ -43,7 +43,7 @@ export function createSong(musicData) {
     })
 }
 
-export function filterString(singer) {//组装合唱的歌手名
+function filterString(singer) {//组装合唱的歌手名
     let ret = []
     if(!singer) {
         return ''

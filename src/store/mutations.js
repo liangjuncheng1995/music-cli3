@@ -27,6 +27,9 @@ const mutations = {
     },
     [types.SET_DISC](state, disc) { //设置推荐相关的歌曲数据
         state.disc = disc
+    },
+    [types.SET_SEARCH_HISTORY](state, history) { //设置搜索历史的相关数据
+        state.searchHistory = history
     }
 
 

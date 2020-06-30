@@ -16,8 +16,11 @@
       </div>
     </div>
     <div class="search-result" v-show="query">
-      <suggest :query="query"></suggest> 
+      <suggest @select="saveSearch" :query="query"></suggest> 
     </div>
+    <transition name="slide">
+      <router-view></router-view>
+    </transition>
   </div>
 </template>
 
@@ -26,6 +29,7 @@ import SearchBox from "@/base/search-box/search-box";
 import { getHotKey } from "@/api/search";
 import { ERR_OK } from "@/api/config";
 import suggest from '@/components/suggest/suggest'
+import { mapActions } from 'vuex';
 export default {
   name: "search",
   data() {
@@ -49,8 +53,16 @@ export default {
       });
     },
     onQueryChange(query) {
+      console.log("子组件传递的数据")
+      console.log(query)
       this.query = query;
-    }
+    },
+    saveSearch() {
+      this.saveSearchHistory(this.query)
+    },
+    ...mapActions([
+      'saveSearchHistory'
+    ])
   },
   components: {
     SearchBox,
@@ -102,5 +114,14 @@ export default {
     top: 168px;
     bottom: 0;
   }
+}
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter,
+.slide-leave-to {
+  transform: translate3d(100%, 0, 0);
 }
 </style>

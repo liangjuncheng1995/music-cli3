@@ -22,15 +22,24 @@ export default {
   methods: {
     clear() {
       this.query = "";
+      this.$emit("query", this.query)
     },
     setQuery(query) {
       this.query = query;
+      this.$emit("query", this.query)
     }
   },
   created() {
-    this.$watch("query", newQuery => {
-        this.$emit("query", newQuery)
-    });
+    let self = this
+    document.onkeypress = function(e) {
+      var keycode = document.all ? event.keyCode : e.which;
+      if (keycode == 13) {
+        self.$emit("query", self.query)
+      }
+    }
+    // this.$watch("query", newQuery => {
+    //     this.$emit("query", newQuery)
+    // });
   }
 };
 </script>

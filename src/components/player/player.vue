@@ -335,6 +335,7 @@ export default {
       this.setPlayList(list);
     },
     async getLyric() {
+      console.log(this.currentSong)
       var resultLyric = await this.currentSong.getLyric();
       if (resultLyric != "no lyric") {
         this.currentLyric = new Lyric(resultLyric, this.handleLyric);

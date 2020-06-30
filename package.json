@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "good-storage": "^1.1.1",
     "better-scroll": "^0.1.15",
     "jsonp": "^0.2.1",
     "style-loader": "^1.2.1",

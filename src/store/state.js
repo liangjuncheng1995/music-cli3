@@ -9,6 +9,7 @@ const state = {
     mode: playMode.sequence, //存储列表的播放模式，默认列表播放
     topList: {}, //存储排行榜的相关数据
     disc:{},//存储推荐歌曲的相关数据
+    searchHistory: [] //储存搜索历史的相关数据
 }
 
 export default state

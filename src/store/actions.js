@@ -2,6 +2,7 @@ import * as types from "./mutation-types"
 import { getPlayUrl } from '@/api/song'
 import { playMode } from '@/common/js/config'
 import { shuffle } from "@/common/js/util"
+import { saveSearch } from "@/common/js/cache"
 
 function findIndex(list, song) {
     return list.findIndex((item) => {
@@ -30,11 +31,11 @@ export const selectPlay = async function ({ commit, state }, { list, index }) {
 }
 
 export const randomPlay = async function ({ commit }, { list }) {
-    
+
     commit(types.SET_PLAY_MODE, playMode.random) //更改播放的模式
     commit(types.SET_SEQUENCE_LIST, list) //设置循环的播放列表
     let randomList = shuffle(list)
-    if(!randomList[0].url) {
+    if (!randomList[0].url) {
         const data = await getPlayUrl(randomList[0].mid)
         randomList[0].url = data.url_mid.data.midurlinfo[0].purl
     }
@@ -54,3 +55,61 @@ export const selectPrev = async function ({ commit, state }, { list, index }) {
         commit(types.SET_PLAYLIST, list)
     }
 }
+
+export const insertSong = async function ({ commit, state }, song) {
+    let playlist = state.playlist.slice()
+    let sequenceList = state.sequenceList.slice()
+    let currentIndex = state.currentIndex
+    
+    //记录当前的歌曲
+    let currentSong = playlist[currentIndex]
+    //查找当前列表中是否有待插入的歌曲并返回其索引
+    let fpIndex = findIndex(playlist, song)
+    //因为插入歌曲，所以索引加一
+    currentIndex++
+    //插入这首歌到当前索引位置
+    playlist.splice(currentIndex, 0, song)//插入当前前播放位置的后一位
+    //如果已经包含这首歌
+    if (fpIndex > -1) {
+        //如果当前播放的的序号大于原本列表中的序号
+        if (currentIndex > fpIndex) {
+            playlist.splice(fpIndex, 1)//删除搜索到的歌曲 在原来列表位置的歌曲
+            currentIndex--
+        } else { //如果当前播放的的序号小于搜索之后原本列表中的序号
+            playlist.splice(fpIndex + 1, 1)//删除原本列表的一条歌曲，由于fp的索引是有发生了改变的，所以要加1
+        }
+    }
+
+    let currentSIndex = findIndex(sequenceList, currentSong) + 1
+    let fsIndex = findIndex(sequenceList, song)
+    sequenceList.splice(currentSIndex, 0, song)
+
+    if (fsIndex > -1) {
+        if (currentSIndex > fsIndex) {
+            sequenceList.splice(fsIndex, 1)
+        } else {
+            sequenceList.splice(fsIndex + 1, 1)
+        }
+    }
+
+    if (!sequenceList[currentIndex].url) {//处理没有url的地址
+        const data = await getPlayUrl(sequenceList[currentIndex].mid)
+        sequenceList[currentIndex].url = data.url_mid.data.midurlinfo[0].purl
+    }
+    if (!playlist[currentIndex].url) {//处理没有url的地址
+        const data = await getPlayUrl(playlist[currentIndex].mid)
+        playlist[currentIndex].url = data.url_mid.data.midurlinfo[0].purl
+    }
+
+    commit(types.SET_PLAYLIST,playlist)
+    commit(types.SET_SEQUENCE_LIST,sequenceList)
+    commit(types.SET_CURRENT_INDEX,currentIndex)
+    commit(types.SET_FULL_SCREEN,true)
+    commit(types.SET_PLAYING_STATE,true)
+
+}
+
+export const saveSearchHistory = function({commit}, query) {
+    commit(types.SET_SEARCH_HISTORY, saveSearch(query))
+}
+
