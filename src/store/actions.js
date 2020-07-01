@@ -2,7 +2,7 @@ import * as types from "./mutation-types"
 import { getPlayUrl } from '@/api/song'
 import { playMode } from '@/common/js/config'
 import { shuffle } from "@/common/js/util"
-import { saveSearch } from "@/common/js/cache"
+import { saveSearch, deleteSearch, clearSearch } from "@/common/js/cache"
 
 function findIndex(list, song) {
     return list.findIndex((item) => {
@@ -60,7 +60,7 @@ export const insertSong = async function ({ commit, state }, song) {
     let playlist = state.playlist.slice()
     let sequenceList = state.sequenceList.slice()
     let currentIndex = state.currentIndex
-    
+
     //记录当前的歌曲
     let currentSong = playlist[currentIndex]
     //查找当前列表中是否有待插入的歌曲并返回其索引
@@ -101,15 +101,22 @@ export const insertSong = async function ({ commit, state }, song) {
         playlist[currentIndex].url = data.url_mid.data.midurlinfo[0].purl
     }
 
-    commit(types.SET_PLAYLIST,playlist)
-    commit(types.SET_SEQUENCE_LIST,sequenceList)
-    commit(types.SET_CURRENT_INDEX,currentIndex)
-    commit(types.SET_FULL_SCREEN,true)
-    commit(types.SET_PLAYING_STATE,true)
+    commit(types.SET_PLAYLIST, playlist)
+    commit(types.SET_SEQUENCE_LIST, sequenceList)
+    commit(types.SET_CURRENT_INDEX, currentIndex)
+    commit(types.SET_FULL_SCREEN, true)
+    commit(types.SET_PLAYING_STATE, true)
 
 }
 
-export const saveSearchHistory = function({commit}, query) {
+export const saveSearchHistory = function ({ commit }, query) {
     commit(types.SET_SEARCH_HISTORY, saveSearch(query))
 }
 
+export const deleteSearchHistory = function ({ commit }, query) {
+    commit(types.SET_SEARCH_HISTORY, deleteSearch(query))
+}
+
+export const clearSearchHistory = function ({ commit }) {
+    commit(types.SET_SEARCH_HISTORY, clearSearch())
+}

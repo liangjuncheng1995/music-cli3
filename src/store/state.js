@@ -1,4 +1,6 @@
-import {playMode} from '@/common/js/config.js'
+import { playMode } from '@/common/js/config.js'
+import { loadSearch } from '@/common/js/cache.js'
+
 const state = {
     singer: {},
     playing: false, //播放的状态
@@ -8,8 +10,8 @@ const state = {
     fullScreen: false, //正常的播放器是否正常加载，与模拟播放器的状态是相反的，只能显示一个
     mode: playMode.sequence, //存储列表的播放模式，默认列表播放
     topList: {}, //存储排行榜的相关数据
-    disc:{},//存储推荐歌曲的相关数据
-    searchHistory: [] //储存搜索历史的相关数据
+    disc: {},//存储推荐歌曲的相关数据
+    searchHistory: loadSearch() //储存搜索历史的相关数据
 }
 
 export default state
