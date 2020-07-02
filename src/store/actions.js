@@ -10,6 +10,23 @@ function findIndex(list, song) {
     })
 }
 
+export const checkoutAudioUrl = async function ({commit, state}, index) { //检查url是否有地址
+    let playlist = state.playlist.slice()
+    let sequenceList = state.sequenceList.slice()
+    console.log(playlist[index].name)
+    console.log(sequenceList[index].name)
+    if(!playlist[index].url) {
+        const data = await getPlayUrl(playlist[index].mid)
+        playlist[index].url = data.url_mid.data.midurlinfo[0].purl
+    } 
+    if(!sequenceList[index].url) {
+        const data = await getPlayUrl(sequenceList[index].mid)
+        sequenceList[index].url = data.url_mid.data.midurlinfo[0].purl
+    } 
+    commit(types.SET_PLAYLIST, playlist)
+    commit(types.SET_SEQUENCE_LIST, sequenceList)
+}
+
 export const selectPlay = async function ({ commit, state }, { list, index }) {
     if (!list[index].url) {
         const data = await getPlayUrl(list[index].mid)
@@ -119,4 +136,52 @@ export const deleteSearchHistory = function ({ commit }, query) {
 
 export const clearSearchHistory = function ({ commit }) {
     commit(types.SET_SEARCH_HISTORY, clearSearch())
+}
+
+export const deleteSong = async function({commit, state}, song) {
+    let playlist = state.playlist.slice()
+    let sequenceList = state.playlist.slice()
+    let currentIndex = state.currentIndex
+
+    let pIndex = findIndex(playlist, song)
+    playlist.splice(pIndex, 1) //删除点击的一首歌曲
+    let sIndex = findIndex(sequenceList, song) 
+    sequenceList.splice(sIndex, 1) //删除点击的一首歌曲
+
+    console.log(pIndex)
+    console.log(currentIndex)
+    
+
+    if(currentIndex > pIndex || currentIndex === playlist.length) {
+        currentIndex -- 
+    }
+
+
+    if (!playlist[currentIndex].url) {//处理没有url的地址
+        const data = await getPlayUrl(playlist[currentIndex].mid)
+        playlist[currentIndex].url = data.url_mid.data.midurlinfo[0].purl
+    }
+    if (!sequenceList[currentIndex].url) {//处理没有url的地址
+        const data = await getPlayUrl(sequenceList[currentIndex].mid)
+        sequenceList[currentIndex].url = data.url_mid.data.midurlinfo[0].purl
+    }
+    
+
+    commit(types.SET_PLAYLIST, playlist)
+    commit(types.SET_SEQUENCE_LIST, sequenceList)
+    commit(types.SET_CURRENT_INDEX, currentIndex)
+
+    if(!playlist.length) { //如果删除了最后一首
+        commit(types.SET_PLAYING_STATE, false)
+    } else {
+        commit(types.SET_PLAYING_STATE, true)
+    }
+ 
+}
+
+export const deleteSongList = function ({commit}) {
+    commit(types.SET_PLAYLIST, [])
+    commit(types.SET_SEQUENCE_LIST, [])
+    commit(types.SET_CURRENT_INDEX, -1)
+    commit(types.SET_PLAYING_STATE, false)
 }

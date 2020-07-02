@@ -89,11 +89,12 @@
             <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon" id="minizi"></i>
           </progress-circle>
         </div>
-        <div class="control">
+        <div class="control" @click.stop="showPlaylist">
           <i class="icon iconfont icon-playlist"></i>
         </div>
       </div>
     </transition>   
+    <playlist ref="playlist"></playlist>
     <audio ref='audio' :src="currentSong.url" @canplay="ready" @ended="end"  @error="error" @timeupdate="undateTime"></audio>
     <!-- @canplay="ready" play="ready"  -->
   </div>
@@ -106,14 +107,18 @@ import { prefixStyle } from "@/common/js/dom";
 // import { debuglog } from "util";
 import ProgressBar from "@/base/progress-bar/progress-bar";
 import ProgressCircle from "@/base/progress-circle/progress-circle";
+import playlist from "@/components/playlist/playlist";
 import MescrollVue from "mescroll.js/mescroll.vue";
 import { playMode } from "@/common/js/config";
-import { shuffle } from "@/common/js/util";
 import Lyric from "lyric-parser";
+import {
+  playerMixin
+} from "@/common/js/mixin"
 
 const transform = prefixStyle("transform");
 const transitionDuration = prefixStyle("transitionDuration");
 export default {
+  mixins: [playerMixin],
   data() {
     return {
       songReady: false,
@@ -139,12 +144,7 @@ export default {
         ? "icon iconfont icon-time-out"
         : "icon iconfont icon-play";
     },
-    iconMode() {
-      //计算切换播放模式的icon
-      return this.mode === playMode.sequence
-        ? "icon-sequence-play"
-        : this.mode === playMode.loop ? "icon-loop" : "icon-random";
-    },
+    
     miniIcon() {
       return this.playing
         ? "icon iconfont icon-mini-pause"
@@ -159,13 +159,9 @@ export default {
       return this.currentTime / this.currentSong.duration; //当前歌曲的播放时间/当前歌曲的总时长 = 播放的百分比
     },
     ...mapGetters([
-      "playlist",
-      "currentSong", //需要播放的歌曲数据
       "fullScreen", //获取模拟播放器的展示状态
       "playing",
-      "mode", //获取播放的模式
       "currentIndex", //获取正在播放歌曲的索引
-      "sequenceList" //获取循环的列表
     ])
   },
   created() {
@@ -174,7 +170,8 @@ export default {
   components: {
     ProgressBar,
     ProgressCircle,
-    MescrollVue
+    MescrollVue,
+    playlist
   },
   methods: {
     mescrollInit(mescroll) {
@@ -277,6 +274,7 @@ export default {
       if (!this.playing) {
         this.togglePlaying();
       }
+      console.log(this.currentTime);
       this.songReady = false;
     },
     togglePlaying() {
@@ -285,8 +283,8 @@ export default {
       }
       console.log("点击暂停和播放");
       this.setPlayingState(!this.playing);
-      if(this.currentLyric){
-        this.currentLyric.togglePlay()
+      if (this.currentLyric) {
+        this.currentLyric.togglePlay();
       }
     },
     ready() {
@@ -321,21 +319,9 @@ export default {
         this.currentLyric.seek(currentTime * 1000);
       }
     },
-    changeMode() {
-      //更改播放列表的状态
-      const mode = (this.mode + 1) % 3;
-      this.setPlayMode(mode);
-      let list = null;
-      if (mode === playMode.random) {
-        list = shuffle(this.sequenceList);
-      } else {
-        list = this.sequenceList;
-      }
-      this._resetCurrentIndex(list);
-      this.setPlayList(list);
-    },
+    
     async getLyric() {
-      console.log(this.currentSong)
+      console.log(this.currentSong);
       var resultLyric = await this.currentSong.getLyric();
       if (resultLyric != "no lyric") {
         this.currentLyric = new Lyric(resultLyric, this.handleLyric);
@@ -370,6 +356,9 @@ export default {
         this.mescroll.scrollTo(0, 300);
       }
       this.playingLyric = txt;
+    },
+    showPlaylist() {
+      this.$refs.playlist.show();
     },
     ScrollTopsa(number, time) {
       if (!time) {
@@ -460,12 +449,7 @@ export default {
 
       this.touch.initiated = false;
     },
-    _resetCurrentIndex(list) {
-      let index = list.findIndex(item => {
-        return item.id === this.currentSong.id;
-      });
-      this.setCurrentIndex(index);
-    },
+    
     error() {
       this.songReady = true;
       console.log("地址错误，需要更换地址");
@@ -487,17 +471,17 @@ export default {
     scroll(e) {},
     ...mapMutations({
       setFullScreen: "SET_FULL_SCREEN",
-      setPlayingState: "SET_PLAYING_STATE",
-      setCurrentIndex: "SET_CURRENT_INDEX",
-      setPlayMode: "SET_PLAY_MODE",
-      setPlayList: "SET_PLAYLIST"
     }),
     ...mapActions(["selectPrev"])
   },
   watch: {
-    currentSong(newSong,oldSong) {
-      if(newSong.id === oldSong.id) {//单曲的循环的时候，不需要重新请求数据
-        return 
+    currentSong(newSong, oldSong) {
+      if (!newSong.id) {
+        return;
+      }
+      if (newSong.id === oldSong.id) {
+        //单曲的循环的时候，不需要重新请求数据
+        return;
       }
       if (this.currentLyric) {
         //切换歌曲的时候，如果已经有this.currentLyric了就停止之前的
