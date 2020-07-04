@@ -1,7 +1,10 @@
 <template>
   <div class="m-header">
-    <div class="icon"></div>
+    <div class="icon-title"></div>
     <h1 class="text">Bilibili Music</h1>
+    <router-link to="/user" class="mine" tag="div">
+      <i class="icon iconfont icon-user"></i>
+    </router-link>
   </div>
 </template>
 
@@ -23,7 +26,7 @@ export default {
   color: $theme-color;
   font-size: 0;
 
-  .icon {
+  .icon-title {
     display: inline-block;
     vertical-align: top;
     margin-top: 5px;
@@ -39,6 +42,17 @@ export default {
     vertical-align: top;
     line-height: 44px;
     font-size: 18px;
+  }
+  .mine {
+    position: absolute;
+    top: 0;
+    right: 0;
+    .icon-user {
+      display: block;
+      padding: 12px;
+      font-size: 20px;
+      color: $theme-color;
+    }
   }
 }
 </style>

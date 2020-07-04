@@ -17,3 +17,7 @@ export const SET_TOP_LIST = "SET_TOP_LIST" //设置排行榜的数据
 export const SET_DISC = "SET_DISC" //设置推荐歌曲的相关数据
 
 export const SET_SEARCH_HISTORY = "SET_SEARCH_HISTORY" //设置搜索历史的相关数据
+
+export const SET_PLAY_HISTORY = "SET_PLAY_HISTORY" //设置播放历史的相关数据
+
+export const SET_FAVORITE_LIST = "SET_FAVORITE_LIST" //设置用户喜欢列表的相关数据

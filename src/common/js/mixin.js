@@ -1,4 +1,4 @@
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import {
     playMode
 } from "@/common/js/config"
@@ -37,6 +37,7 @@ export const playerMixin = {
             "sequenceList", //获取循环的列表
             "currentSong", //需要播放的歌曲数据
             "mode", //获取播放的模式
+            "favoriteList" //获取最喜欢歌曲的列表
         ]),
         iconMode() {
             //计算切换播放模式的icon
@@ -66,11 +67,35 @@ export const playerMixin = {
             });
             this.setCurrentIndex(index);
         },
+        getFavoriteIcon(song) {
+            if (this.isFavorite(song)) {
+                return 'icon-shoucang'
+            }
+            return 'icon-favoriteoutline'
+        },
+        toggeleFavorite(song) {
+            if (this.isFavorite(song)) {
+                this.deleteFavoriteList(song)
+            } else {
+                this.saveFavoriteList(song)
+            }
+        },
+        isFavorite(song) {
+            const index = this.favoriteList.findIndex((item) => {
+                return item.id === song.id
+            })
+            return index > -1
+        },
         ...mapMutations({
             setPlayingState: "SET_PLAYING_STATE",
             setCurrentIndex: "SET_CURRENT_INDEX",
             setPlayMode: "SET_PLAY_MODE",
-            setPlayList: "SET_PLAYLIST"
+            setPlayList: "SET_PLAYLIST",
+
         }),
+        ...mapActions([
+            'saveFavoriteList',
+            'deleteFavoriteList'
+        ])
     }
 }

@@ -16,7 +16,7 @@
     </div>
     <div class="bg-layer" ref="layer"></div>
 
-    <div @scroll="scroll" class="list" ref="list">
+    <div @scroll="scroll" class="list" ref="list" @touchstart="listTouchStart" @touchEnd="listTouchEnd" @touchmove="listTouchMove">
       <div class="song-list-container">
         <song-list @select="selectItem" :songs="songs"></song-list>
       </div>
@@ -31,10 +31,12 @@
 <script>
 import SongList from "@/base/song-list/song-list";
 import loading from "@/base/loading/loading";
-import {mapActions, mapMutations} from "vuex"
-import {playlistMixin} from '@/common/js/mixin'
+import { mapActions, mapMutations } from "vuex";
+import { playlistMixin } from "@/common/js/mixin";
 
 const RESERVED_HEIGHT = 40;
+var listOffsetTop = 263;
+var ListOffsetTop = 263;
 export default {
   mixins: [playlistMixin],
   props: {
@@ -55,6 +57,9 @@ export default {
     SongList,
     loading
   },
+  created() {
+    this.touch = {};
+  },
   data() {
     return {
       scrollY: 0
@@ -72,45 +77,87 @@ export default {
   },
   methods: {
     handlePlaylist(playlist) {
-      const bottom = playlist.length > 0 ? '60px' : ''
-      this.$refs.list.style.bottom = bottom
+      const bottom = playlist.length > 0 ? "60px" : "";
+      this.$refs.list.style.bottom = bottom;
     },
     back() {
       this.$router.back();
     },
     scroll(e) {
-      this.scrollY = - e.target.scrollTop;
+      this.scrollY = -e.target.scrollTop;
     },
     selectItem(item, index) {
       this.selectPlay({
         list: this.songs,
         index
-      })
+      });
     },
     random() {
       this.randomPlay({
         list: this.songs
-      })
+      });
     },
-    ...mapActions([
-      'selectPlay',
-      'randomPlay'
-    ]),
+    listTouchStart(e) {
+      // this.touch.initiated = true;
+      // const touch = e.touches[0];
+      // this.touch.startX = touch.pageX;
+      // this.touch.startY = touch.pageY;
+    },
+    listTouchMove(e) {
+      // if (!this.touch.initiated) {
+      //   return;
+      // }
+      // const touch = e.touches[0];
+      // // 计算x,y轴方向滑动的距离
+      // const detalX = touch.pageX - this.touch.startX;
+      // const detalY = touch.pageY - this.touch.startY;
+      // const touchesOffetTop = parseFloat(this.$refs.list.style.top.replace(/[^0-9]/ig,"")) 
+      // if (Math.abs(detalX) > Math.abs(detalY) && detalY) {
+      //   //如果横向滚动则取消操作
+      //   return;
+      // }
+      // console.log(ListOffsetTop)
+      // if(detalY > 0) {//向下滑动
+      //   if(document.getElementsByClassName("list")[0].offsetTop === ListOffsetTop) {
+      //     return;
+      //   }
+      //   if(this.$refs.list.scrollTop == 0 ) {
+      //     listOffsetTop = listOffsetTop + 3
+      //     this.$refs.list.style.top = listOffsetTop + 'px'
+      //   }
+      // } else {
+      //   if(touchesOffetTop < RESERVED_HEIGHT) {
+      //     this.$refs.list.style.overflowY = "scroll"
+      //     return
+      //   } else {
+      //     this.$refs.list.style.overflowY = "hidden"
+      //   }
+      //   listOffsetTop = listOffsetTop - 3
+      //   this.$refs.list.style.top = listOffsetTop + 'px'
+      // }
+    },
+    listTouchEnd(e) {
+
+    },
+    ...mapActions(["selectPlay", "randomPlay"])
   },
   watch: {
     scrollY(newY) {
-      let translateY = Math.max(this.minTranslateY, newY)
-      let zIndex = 0
-      let scale = 1 //封面图的缩放数值
-      let blur = 0
-      // this.$refs.layer.style.transform  = `translate3d(0,${translateY}px,0)` //移动layer节点的位置
-      // this.$refs.list.style.top = `${this.$refs.bgImage.clientHeight + translateY }px `
-      const percent = Math.abs(newY / this.imageHeight) //滚动的距离和封面图的比例
-      if(newY > 0) {
-        scale = 1 + percent
-        zIndex = 10
+      // console.log(newY)
+      // console.log(this.$refs.list.scrollTop)
+      // this.$refs.list.scrollTop = 0
+      let translateY = Math.max(this.minTranslateY, newY);
+      let zIndex = 0;
+      let scale = 1; //封面图的缩放数值
+      let blur = 0;
+      this.$refs.layer.style.transform  = `translate3d(0,${translateY}px,0)` //移动layer节点的位置
+      this.$refs.list.style.top = `${this.$refs.bgImage.clientHeight + translateY}px `
+      const percent = Math.abs(newY / this.imageHeight); //滚动的距离和封面图的比例
+      if (newY > 0) {
+        scale = 1 + percent;
+        zIndex = 10;
       } else {
-        blur = Math.min(20 * percent, 20)
+        blur = Math.min(20 * percent, 20);
       }
       // this.$refs.filter.style.backdrop = `blur(${blur}px)`
       // if(newY < this.minTranslateY) {
@@ -175,6 +222,7 @@ export default {
     padding-top: 70%;
     transform-origin: top;
     background-size: cover;
+    z-index: 0;
 
     .play-container {
       position: absolute;

@@ -30,7 +30,14 @@ const mutations = {
     },
     [types.SET_SEARCH_HISTORY](state, history) { //设置搜索历史的相关数据
         state.searchHistory = history
+    },
+    [types.SET_PLAY_HISTORY](state, history) {//设置播放历史
+        state.playHistory = history
+    },
+    [types.SET_FAVORITE_LIST](state, list) { //设置最喜欢的列表
+        state.favoriteList = list
     }
+
 
 
 

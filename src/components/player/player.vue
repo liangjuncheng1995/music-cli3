@@ -26,8 +26,8 @@
             </div> 
           </div>
 
-          <div @scroll="scroll" class="middle-r" ref="lyricList">
-            <mescroll-vue hardwareClass="mescroll-hardware" :down="mescrollDown" ref="mescroll" @init="mescrollInit">
+          <scroll @scroll="scroll" class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
+            <!-- <mescroll-vue hardwareClass="mescroll-hardware" :down="mescrollDown" ref="mescroll" @init="mescrollInit"> -->
               <div class="lyric-container" ref="lyricContainer">
                 <div v-if="currentLyric">
                   <p ref="lyricLine" class="text" :key="index" v-for="(line, index) in currentLyric.lines"
@@ -37,8 +37,8 @@
                   </p>
                 </div>
               </div>
-            </mescroll-vue>
-          </div> 
+            <!-- </mescroll-vue> -->
+          </scroll> 
         </div> 
 
         <div class="bottom">
@@ -69,7 +69,7 @@
               <i @click="next" class="icon iconfont icon-next-song"></i>
             </div>
             <div class="icon1 i-right">
-              <i class="icon iconfont icon-favoriteoutline"></i>
+              <i class="icon iconfont" @click="toggeleFavorite(currentSong)" :class="getFavoriteIcon(currentSong)"></i>
             </div>
           </div>
         </div>
@@ -108,7 +108,9 @@ import { prefixStyle } from "@/common/js/dom";
 import ProgressBar from "@/base/progress-bar/progress-bar";
 import ProgressCircle from "@/base/progress-circle/progress-circle";
 import playlist from "@/components/playlist/playlist";
-import MescrollVue from "mescroll.js/mescroll.vue";
+// import MescrollVue from "mescroll.js/mescroll.vue";
+import scroll from "@/base/scroll/scroll"
+
 import { playMode } from "@/common/js/config";
 import Lyric from "lyric-parser";
 import {
@@ -170,8 +172,9 @@ export default {
   components: {
     ProgressBar,
     ProgressCircle,
-    MescrollVue,
-    playlist
+    // MescrollVue,
+    playlist,
+    scroll
   },
   methods: {
     mescrollInit(mescroll) {
@@ -289,6 +292,7 @@ export default {
     },
     ready() {
       this.songReady = true;
+      this.savePlayHistory(this.currentSong)
       console.log(this.currentSong.url);
       console.log("播放的歌曲的地址正确");
     },
@@ -340,20 +344,22 @@ export default {
       if (lineNum > 5) {
         //监听移动歌词的列表,//如果lineNum大于5，为了让currentLine保持在中间，滚动到lineNum-5的元素上
         let lineEl = this.$refs.lyricLine[lineNum - 5]; //获取调整滚动条的位置
-        let unit = 32;
-        let num = lineNum * unit - 5 * unit;
-        // lineEl.scrollIntoView()
-        var el = this.$refs.lyricList;
-        // this.ScrollTopsa(num,200)
-        this.$refs.lyricList.scrollTo({
-          top: num,
-          behavior: "smooth"
-        });
-        this.mescroll.scrollTo(num, 300);
+        this.$refs.lyricList.scrollToElement(lineEl,1000)
+        // let unit = 32;
+        // let num = lineNum * unit - 5 * unit;
+        // // lineEl.scrollIntoView()
+        // var el = this.$refs.lyricList;
+        // // this.ScrollTopsa(num,200)
+        // this.$refs.lyricList.scrollTo({
+        //   top: num,
+        //   behavior: "smooth"
+        // });
+        // this.mescroll.scrollTo(num, 300);
         // this.$refs.lyricList.scrollTop = 0
         // this.$refs.lyricContainer.style.transform = `translate(0,${-num}px)`;
       } else {
-        this.mescroll.scrollTo(0, 300);
+        this.$refs.lyricList.scrollTo(0,0,1000)
+        // this.mescroll.scrollTo(0, 300);
       }
       this.playingLyric = txt;
     },
@@ -404,9 +410,9 @@ export default {
       );
       this.touch.percent = Math.abs(offsetWidth / window.innerWidth); //计算滑动的百分比
 
-      this.$refs.middleL.style[transitionDuration] = 0; //消除过渡的时间
-      this.$refs.lyricList.style.transitionDuration = 0;
-      this.$refs.lyricList.style.transform = `translate3d(${offsetWidth}px,0,0)`;
+      this.$refs.middleL.style.transitionDuration = 0; //消除过渡的时间
+      this.$refs.lyricList.$el.style.transitionDuration = 0;
+      this.$refs.lyricList.$el.style.transform = `translate3d(${offsetWidth}px,0,0)`;
       this.$refs.middleL.style.opacity = 1 - this.touch.percent; //根据移动距离改变cd页面的透明度
     },
     middleTouchEnd(e) {
@@ -442,9 +448,9 @@ export default {
           opacity = 0;
         }
       }
-      this.$refs.middleL.style[transitionDuration] = `300ms`;
-      this.$refs.lyricList.style.transitionDuration = `300ms`; //设置过度时间300ms
-      this.$refs.lyricList.style.transform = `translate3d(${offsetWidth}px,0,0)`;
+      this.$refs.middleL.style.transitionDuration = `300ms`;
+      this.$refs.lyricList.$el.style.transitionDuration = `300ms`; //设置过度时间300ms
+      this.$refs.lyricList.$el.style.transform = `translate3d(${offsetWidth}px,0,0)`;
       this.$refs.middleL.style.opacity = opacity;
 
       this.touch.initiated = false;
@@ -472,7 +478,7 @@ export default {
     ...mapMutations({
       setFullScreen: "SET_FULL_SCREEN",
     }),
-    ...mapActions(["selectPrev"])
+    ...mapActions(["selectPrev","savePlayHistory"])
   },
   watch: {
     currentSong(newSong, oldSong) {
@@ -727,6 +733,10 @@ export default {
         .i-right {
           text-align: left;
           .icon-favoriteoutline {
+            font-size: 25px;
+          }
+          .icon-shoucang {
+            color: $theme-pink-favorite;
             font-size: 25px;
           }
         }

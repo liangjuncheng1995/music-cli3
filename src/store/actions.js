@@ -2,7 +2,14 @@ import * as types from "./mutation-types"
 import { getPlayUrl } from '@/api/song'
 import { playMode } from '@/common/js/config'
 import { shuffle } from "@/common/js/util"
-import { saveSearch, deleteSearch, clearSearch } from "@/common/js/cache"
+import { 
+    saveSearch, 
+    deleteSearch, 
+    clearSearch, 
+    savePlay, 
+    saveFavorite, 
+    deleteFavorite 
+} from "@/common/js/cache"
 
 function findIndex(list, song) {
     return list.findIndex((item) => {
@@ -10,19 +17,19 @@ function findIndex(list, song) {
     })
 }
 
-export const checkoutAudioUrl = async function ({commit, state}, index) { //检查url是否有地址
+export const checkoutAudioUrl = async function ({ commit, state }, index) { //检查url是否有地址
     let playlist = state.playlist.slice()
     let sequenceList = state.sequenceList.slice()
     console.log(playlist[index].name)
     console.log(sequenceList[index].name)
-    if(!playlist[index].url) {
+    if (!playlist[index].url) {
         const data = await getPlayUrl(playlist[index].mid)
         playlist[index].url = data.url_mid.data.midurlinfo[0].purl
-    } 
-    if(!sequenceList[index].url) {
+    }
+    if (!sequenceList[index].url) {
         const data = await getPlayUrl(sequenceList[index].mid)
         sequenceList[index].url = data.url_mid.data.midurlinfo[0].purl
-    } 
+    }
     commit(types.SET_PLAYLIST, playlist)
     commit(types.SET_SEQUENCE_LIST, sequenceList)
 }
@@ -138,22 +145,22 @@ export const clearSearchHistory = function ({ commit }) {
     commit(types.SET_SEARCH_HISTORY, clearSearch())
 }
 
-export const deleteSong = async function({commit, state}, song) {
+export const deleteSong = async function ({ commit, state }, song) {
     let playlist = state.playlist.slice()
     let sequenceList = state.playlist.slice()
     let currentIndex = state.currentIndex
 
     let pIndex = findIndex(playlist, song)
     playlist.splice(pIndex, 1) //删除点击的一首歌曲
-    let sIndex = findIndex(sequenceList, song) 
+    let sIndex = findIndex(sequenceList, song)
     sequenceList.splice(sIndex, 1) //删除点击的一首歌曲
 
     console.log(pIndex)
     console.log(currentIndex)
-    
 
-    if(currentIndex > pIndex || currentIndex === playlist.length) {
-        currentIndex -- 
+
+    if (currentIndex > pIndex || currentIndex === playlist.length) {
+        currentIndex--
     }
 
 
@@ -165,23 +172,37 @@ export const deleteSong = async function({commit, state}, song) {
         const data = await getPlayUrl(sequenceList[currentIndex].mid)
         sequenceList[currentIndex].url = data.url_mid.data.midurlinfo[0].purl
     }
-    
+
 
     commit(types.SET_PLAYLIST, playlist)
     commit(types.SET_SEQUENCE_LIST, sequenceList)
     commit(types.SET_CURRENT_INDEX, currentIndex)
 
-    if(!playlist.length) { //如果删除了最后一首
+    if (!playlist.length) { //如果删除了最后一首
         commit(types.SET_PLAYING_STATE, false)
     } else {
         commit(types.SET_PLAYING_STATE, true)
     }
- 
+
 }
 
-export const deleteSongList = function ({commit}) {
+export const deleteSongList = function ({ commit }) {
     commit(types.SET_PLAYLIST, [])
     commit(types.SET_SEQUENCE_LIST, [])
     commit(types.SET_CURRENT_INDEX, -1)
     commit(types.SET_PLAYING_STATE, false)
 }
+
+
+export const savePlayHistory = function ({ commit }, song) {
+    commit(types.SET_PLAY_HISTORY, savePlay(song))
+}
+
+export const saveFavoriteList = function ({ commit }, song) {
+    commit(types.SET_FAVORITE_LIST, saveFavorite(song))
+}
+
+export const deleteFavoriteList = function ({ commit }, song) {
+    commit(types.SET_FAVORITE_LIST, deleteFavorite(song))
+}
+

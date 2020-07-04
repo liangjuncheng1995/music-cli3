@@ -13,7 +13,7 @@
           </div>
         </li>
       </a>
-      <loading v-show="hasMore" title=""></loading>
+      <loading v-show="hasMore" title="" style="padding-top:10px;"></loading>
       <div v-show="!hasMore && result.length">
         <no-result title="已经到底了"></no-result>
       </div>

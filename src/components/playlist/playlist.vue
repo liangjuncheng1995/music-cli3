@@ -26,7 +26,7 @@
           </transition-group>
         </div>
         <div class="list-operate">
-          <div class="add">
+          <div class="add" @click="addSong">
             <i class="icon iconfont icon-add"></i>
             <span class="text">添加歌曲列表</span>
           </div>
@@ -36,6 +36,8 @@
         </div>
       </div>
       <confirm ref="confirm" @confirm="confirmClear" text="是否清空播放列表" confirmBtnTextt="清空"></confirm>
+      
+      <add-song ref="addSong"></add-song>
     </div>
   </transition>
 
@@ -43,6 +45,7 @@
 
 <script>
 import Confirm from "@/base/confirm/confirm";
+import AddSong from "@/components/add-song/add-song";
 import { mapActions } from "vuex";
 import { playMode } from "@/common/js/config";
 import { playerMixin } from "@/common/js/mixin";
@@ -55,7 +58,8 @@ export default {
     };
   },
   components: {
-    Confirm
+    Confirm,
+    AddSong
   },
   computed: {
     modeText() {
@@ -65,6 +69,7 @@ export default {
     }
   },
   methods: {
+    
     show() {
       this.showFlag = true;
       this.$nextTick(() => {
@@ -73,6 +78,9 @@ export default {
     },
     hide() {
       this.showFlag = false;
+    },
+    addSong() {
+      this.$refs.addSong.show()
     },
     async selectItem(item, index) {
       if (this.mode === playMode.random) {
@@ -120,7 +128,7 @@ export default {
     },
     confirmClear() {
       this.deleteSongList();
-      this.hide()
+      this.hide();
     },
     ...mapActions(["deleteSong", "checkoutAudioUrl", "deleteSongList"])
   },
@@ -225,7 +233,7 @@ export default {
 
           .icon-clear {
             font-size: 14px;
-            color:$theme-color;
+            color: $theme-color;
           }
         }
       }
