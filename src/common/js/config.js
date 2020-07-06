@@ -4,3 +4,5 @@ export const playMode = {
     loop: 1,
     random: 2
 }
+
+export const netWorkurl = "https://y.qq.com"

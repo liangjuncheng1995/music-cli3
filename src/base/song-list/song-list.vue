@@ -2,6 +2,9 @@
   <div class="song-list">
     <ul>
       <li @click="selectItem(song, index)" v-for="(song, index) in songs" class="item" :key="index">
+        <div class="rank" v-show="rank">
+          <span :class="getRankCls(index)">{{getRankText(index)}}</span>
+        </div>
         <div class="content">
           <h2 class="name">{{song.name}}</h2>
           <p class="desc">{{getDesc(song)}}</p>
@@ -16,6 +19,10 @@ export default {
     songs: {
       type: Array,
       default: []
+    },
+    rank: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
@@ -24,6 +31,18 @@ export default {
     },
     getDesc(song) {
       return `${song.singer}·${song.album}`;
+    },
+    getRankCls(index) {
+      if (index <= 2) {
+        return `icon icon${index}`;
+      } else {
+        return "text";
+      }
+    },
+    getRankText(index) {
+      if (index > 2) {
+        return index + 1;
+      }
     }
   }
 };
@@ -37,6 +56,34 @@ export default {
     box-sizing: border-box;
     height: 64px;
     font-size: 14px;
+    .rank {
+      flex: 0 0 25px;
+      width: 25px;
+      margin-right: 30px;
+      text-align: center;
+      .icon {
+        display: inline-block;
+        width: 25px !important;
+        height: 24px;
+        background-size: 25px 24px;
+      }
+      .icon0 {
+        background: url(./first@2x.png);
+        background-size: 25px 24px;
+      }
+      .icon1 {
+        background: url(./second@2x.png);
+        background-size: 25px 24px;
+      }
+      .icon2 {
+        background: url(./third@2x.png);
+        background-size: 25px 24px;
+      }
+      .text {
+        color: $theme-color;
+        font-size: 18px;
+      }
+    }
 
     .content {
       flex: 1;
@@ -45,7 +92,7 @@ export default {
 
       .name {
         color: $theme-color;
-        @include ellipseOne
+        @include ellipseOne;
       }
 
       .desc {

@@ -18,7 +18,7 @@
 
     <div @scroll="scroll" class="list" ref="list" @touchstart="listTouchStart" @touchEnd="listTouchEnd" @touchmove="listTouchMove">
       <div class="song-list-container">
-        <song-list @select="selectItem" :songs="songs"></song-list>
+        <song-list :rank="rank" @select="selectItem" :songs="songs"></song-list>
       </div>
       <div class="loading-container" v-show="!songs.length">
           <loading></loading>          
@@ -51,6 +51,10 @@ export default {
     title: {
       type: String,
       default: ""
+    },
+    rank: {
+      type: Boolean,
+      default: false
     }
   },
   components: {
@@ -111,7 +115,7 @@ export default {
       // // 计算x,y轴方向滑动的距离
       // const detalX = touch.pageX - this.touch.startX;
       // const detalY = touch.pageY - this.touch.startY;
-      // const touchesOffetTop = parseFloat(this.$refs.list.style.top.replace(/[^0-9]/ig,"")) 
+      // const touchesOffetTop = parseFloat(this.$refs.list.style.top.replace(/[^0-9]/ig,""))
       // if (Math.abs(detalX) > Math.abs(detalY) && detalY) {
       //   //如果横向滚动则取消操作
       //   return;
@@ -136,9 +140,7 @@ export default {
       //   this.$refs.list.style.top = listOffsetTop + 'px'
       // }
     },
-    listTouchEnd(e) {
-
-    },
+    listTouchEnd(e) {},
     ...mapActions(["selectPlay", "randomPlay"])
   },
   watch: {
@@ -150,8 +152,9 @@ export default {
       let zIndex = 0;
       let scale = 1; //封面图的缩放数值
       let blur = 0;
-      this.$refs.layer.style.transform  = `translate3d(0,${translateY}px,0)` //移动layer节点的位置
-      this.$refs.list.style.top = `${this.$refs.bgImage.clientHeight + translateY}px `
+      this.$refs.layer.style.transform = `translate3d(0,${translateY}px,0)`; //移动layer节点的位置
+      this.$refs.list.style.top = `${this.$refs.bgImage.clientHeight +
+        translateY}px `;
       const percent = Math.abs(newY / this.imageHeight); //滚动的距离和封面图的比例
       if (newY > 0) {
         scale = 1 + percent;

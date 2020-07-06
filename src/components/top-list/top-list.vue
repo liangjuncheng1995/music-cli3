@@ -1,5 +1,5 @@
 <template lang='html'>
-   <music-list :bg-image="bgImage" :title="title" :songs="songs"></music-list> 
+   <music-list :rank="rank" :bg-image="bgImage" :title="title" :songs="songs"></music-list> 
 </template>
 
 <script>
@@ -12,7 +12,8 @@ import { createSong } from "@/common/js/song";
 export default {
   data() {
     return {
-      songs: []
+      songs: [],
+      rank: true
     };
   },
   computed: {
@@ -32,6 +33,10 @@ export default {
   },
   methods: {
     _getMusicList() {
+      if(!this.topList.id) {
+        this.$router.push('/rank')
+        return
+      }
       getMusicList(this.topList.id).then(res => {
         if (res.code === ERR_OK) {
           this.songs = this._normalizeSongs(res.songlist);

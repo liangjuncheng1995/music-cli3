@@ -31,11 +31,11 @@
             <span class="text">添加歌曲列表</span>
           </div>
         </div>
-        <div class="list-close">
+        <div @click="hide" class="list-close">
           <span>关闭</span>
         </div>
       </div>
-      <confirm ref="confirm" @confirm="confirmClear" text="是否清空播放列表" confirmBtnTextt="清空"></confirm>
+      <confirm ref="confirm" @confirm="confirmClear" text="是否清空播放列表" confirmBtnText="清空"></confirm>
       
       <add-song ref="addSong"></add-song>
     </div>
@@ -111,11 +111,11 @@ export default {
       const index = this.sequenceList.findIndex(song => {
         return current.id === song.id;
       });
-      this.$refs.listContent.scrollTo({
-        top: index * itemHeight,
-        behavior: "smooth"
-      });
-      //   this.$refs.listContent.scrollTop = index * itemHeight;
+      // this.$refs.listContent.scrollTo({
+      //   top: index * itemHeight,
+      //   behavior: "smooth"
+      // });
+        this.$refs.listContent.scrollTop = index * itemHeight;
     },
     deleteOne(item) {
       this.deleteSong(item);

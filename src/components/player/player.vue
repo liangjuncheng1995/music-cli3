@@ -96,6 +96,7 @@
     </transition>   
     <playlist ref="playlist"></playlist>
     <audio ref='audio' :src="currentSong.url" @canplay="ready" @ended="end"  @error="error" @timeupdate="undateTime"></audio>
+    <confirm ref="confirm" @cancel="clearItem" @confirm="confirmClear" text="该歌曲需要vip才能听，是否跳转qq音乐官网" confirmBtnText="跳转"></confirm>
     <!-- @canplay="ready" play="ready"  -->
   </div>
 </template>
@@ -109,13 +110,14 @@ import ProgressBar from "@/base/progress-bar/progress-bar";
 import ProgressCircle from "@/base/progress-circle/progress-circle";
 import playlist from "@/components/playlist/playlist";
 // import MescrollVue from "mescroll.js/mescroll.vue";
-import scroll from "@/base/scroll/scroll"
+import scroll from "@/base/scroll/scroll";
 
 import { playMode } from "@/common/js/config";
 import Lyric from "lyric-parser";
-import {
-  playerMixin
-} from "@/common/js/mixin"
+import { playerMixin } from "@/common/js/mixin";
+
+import Confirm from "@/base/confirm/confirm";
+import { netWorkurl } from "@/common/js/config";
 
 const transform = prefixStyle("transform");
 const transitionDuration = prefixStyle("transitionDuration");
@@ -146,7 +148,7 @@ export default {
         ? "icon iconfont icon-time-out"
         : "icon iconfont icon-play";
     },
-    
+
     miniIcon() {
       return this.playing
         ? "icon iconfont icon-mini-pause"
@@ -163,7 +165,7 @@ export default {
     ...mapGetters([
       "fullScreen", //获取模拟播放器的展示状态
       "playing",
-      "currentIndex", //获取正在播放歌曲的索引
+      "currentIndex" //获取正在播放歌曲的索引
     ])
   },
   created() {
@@ -174,7 +176,8 @@ export default {
     ProgressCircle,
     // MescrollVue,
     playlist,
-    scroll
+    scroll,
+    Confirm
   },
   methods: {
     mescrollInit(mescroll) {
@@ -244,19 +247,23 @@ export default {
         console.log("上一首的地址错误");
         return;
       }
-      let index = this.currentIndex - 1;
-      if (index === -1) {
-        //如果是从第一首歌曲点击了上一首，应该跳转到播放歌曲列表的最后一首
-        index = this.playlist.length - 1;
-      }
-      await this.selectPrev({
-        list: this.playlist,
-        index
-      });
-      this.setCurrentIndex(index);
-      if (!this.playing) {
-        //如果播放的状态是暂停的时候，应该再次启动播放的按钮
-        this.togglePlaying();
+      if (this.playlist.length === 1) {
+        this.loop();
+      } else {
+        let index = this.currentIndex - 1;
+        if (index === -1) {
+          //如果是从第一首歌曲点击了上一首，应该跳转到播放歌曲列表的最后一首
+          index = this.playlist.length - 1;
+        }
+        await this.selectPrev({
+          list: this.playlist,
+          index
+        });
+        this.setCurrentIndex(index);
+        if (!this.playing) {
+          //如果播放的状态是暂停的时候，应该再次启动播放的按钮
+          this.togglePlaying();
+        }
       }
       this.songReady = false;
     },
@@ -265,19 +272,22 @@ export default {
         console.log("地址错误，下一首歌曲获取不了");
         return;
       }
-      let index = this.currentIndex + 1;
-      if (index === this.playlist.length) {
-        index == 0;
+      if (this.playlist.length === 1) {
+        this.loop();
+      } else {
+        let index = this.currentIndex + 1;
+        if (index === this.playlist.length) {
+          index = 0;
+        }
+        await this.selectPrev({
+          list: this.playlist,
+          index
+        });
+        this.setCurrentIndex(index);
+        if (!this.playing) {
+          this.togglePlaying();
+        }
       }
-      await this.selectPrev({
-        list: this.playlist,
-        index
-      });
-      this.setCurrentIndex(index);
-      if (!this.playing) {
-        this.togglePlaying();
-      }
-      console.log(this.currentTime);
       this.songReady = false;
     },
     togglePlaying() {
@@ -292,7 +302,7 @@ export default {
     },
     ready() {
       this.songReady = true;
-      this.savePlayHistory(this.currentSong)
+      this.savePlayHistory(this.currentSong);
       console.log(this.currentSong.url);
       console.log("播放的歌曲的地址正确");
     },
@@ -323,7 +333,7 @@ export default {
         this.currentLyric.seek(currentTime * 1000);
       }
     },
-    
+
     async getLyric() {
       console.log(this.currentSong);
       var resultLyric = await this.currentSong.getLyric();
@@ -344,7 +354,7 @@ export default {
       if (lineNum > 5) {
         //监听移动歌词的列表,//如果lineNum大于5，为了让currentLine保持在中间，滚动到lineNum-5的元素上
         let lineEl = this.$refs.lyricLine[lineNum - 5]; //获取调整滚动条的位置
-        this.$refs.lyricList.scrollToElement(lineEl,1000)
+        this.$refs.lyricList.scrollToElement(lineEl, 1000);
         // let unit = 32;
         // let num = lineNum * unit - 5 * unit;
         // // lineEl.scrollIntoView()
@@ -358,7 +368,7 @@ export default {
         // this.$refs.lyricList.scrollTop = 0
         // this.$refs.lyricContainer.style.transform = `translate(0,${-num}px)`;
       } else {
-        this.$refs.lyricList.scrollTo(0,0,1000)
+        this.$refs.lyricList.scrollTo(0, 0, 1000);
         // this.mescroll.scrollTo(0, 300);
       }
       this.playingLyric = txt;
@@ -455,7 +465,7 @@ export default {
 
       this.touch.initiated = false;
     },
-    
+
     error() {
       this.songReady = true;
       console.log("地址错误，需要更换地址");
@@ -474,14 +484,27 @@ export default {
         this.currentLyric.seek(0);
       }
     },
+    confirmClear() {
+      location.href = netWorkurl;
+    },
+    clearItem() {
+      console.log("点击了取消按钮")
+      this.$refs.confirm.hide()
+      this.deleteSongList();
+    },
     scroll(e) {},
     ...mapMutations({
-      setFullScreen: "SET_FULL_SCREEN",
+      setFullScreen: "SET_FULL_SCREEN"
     }),
-    ...mapActions(["selectPrev","savePlayHistory"])
+    ...mapActions(["selectPrev", "savePlayHistory", "deleteSongList"])
   },
   watch: {
     currentSong(newSong, oldSong) {
+      this.$refs.confirm.hide()
+      if (!newSong.url) {
+        this.$refs.confirm.show();
+        return
+      }
       if (!newSong.id) {
         return;
       }

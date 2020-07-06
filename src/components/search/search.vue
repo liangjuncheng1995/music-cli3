@@ -41,19 +41,18 @@ import { ERR_OK } from "@/api/config";
 import suggest from "@/components/suggest/suggest";
 import SearchList from "@/base/search-list/search-list";
 import Confirm from "@/base/confirm/confirm";
-import { mapActions, mapGetters } from "vuex";
-import { playlistMixin } from "@/common/js/mixin";
+import { mapActions } from "vuex";
+import { playlistMixin, searchMixin } from "@/common/js/mixin";
 export default {
-  mixins: [playlistMixin],
+  mixins: [playlistMixin, searchMixin],
   name: "search",
   data() {
     return {
       hotKey: [],
-      query: ""
     };
   },
   computed: {
-    ...mapGetters(["searchHistory"])
+    
   },
   created() {
     this._getHotKey();
@@ -66,9 +65,7 @@ export default {
       this.$refs.shortcutContainer.style.height = height  + "px"
       this.$refs.searchResult.style.bottom = bottom
     },
-    addQuery(query) {
-      this.$refs.searchBox.setQuery(query);
-    },
+   
     _getHotKey() {
       getHotKey().then(res => {
         if (res.code === ERR_OK) {
@@ -76,20 +73,11 @@ export default {
         }
       });
     },
-    onQueryChange(query) {
-      console.log("子组件传递的数据");
-      console.log(query);
-      this.query = query;
-    },
-    saveSearch() {
-      this.saveSearchHistory(this.query);
-    },
+    
     showConfirm() {
       this.$refs.confirm.show();
     },
     ...mapActions([
-      "saveSearchHistory",
-      "deleteSearchHistory",
       "clearSearchHistory"
     ])
   },
