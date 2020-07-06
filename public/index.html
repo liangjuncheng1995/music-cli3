@@ -17,7 +17,19 @@
     <!-- <script type="text/javascript" src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
 		<script type="text/javascript">
 			var vConsole = new VConsole()
-		</script> -->
+    </script> -->
+    <% if (process.env.NODE_ENV === 'production') { %>
+
+      <% for(var css of htmlWebpackPlugin.options.cdn.css) { %>
+        <link href="<%=css%>" rel="preload" as="style">
+        <link rel="stylesheet" href="<%=css%>" as="style">
+      <% } %>
+      <% for(var js of htmlWebpackPlugin.options.cdn.js) { %>
+        <link href="<%=js%>" rel="preload" as="script">
+        <script src="<%=js%>"></script>
+      <% } %>
+        
+    <% } %>
 </head>
 
 <body>
