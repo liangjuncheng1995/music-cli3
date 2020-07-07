@@ -1,9 +1,9 @@
 import service from '../util/request'
-import { commonParams } from './config'
+import { commonParams,recordApiURL } from './config'
 
 
 export function getLyric(mid) {
-    const url = '/musicApi/getLyric'
+    const url = `${recordApiURL}/getLyric`
     const data = Object.assign({}, commonParams, {
         songmid: mid,
         platform: 'yqq',
@@ -21,7 +21,7 @@ export function getLyric(mid) {
 }
 
 export function getPlayUrl(mid) {
-    const url = "musicApi/getPlayUrl"
+    const url = `${recordApiURL}/getPlayUrl`
     let mids = []
     let types = []
     mids.push(mid)

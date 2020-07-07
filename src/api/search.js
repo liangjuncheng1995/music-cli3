@@ -1,4 +1,4 @@
-import { commonParams, options } from "./config"
+import { commonParams, options,recordApiURL } from "./config"
 import jsonp from "@/common/js/jsonp"
 import service from "../util/request"
 
@@ -13,7 +13,7 @@ export function getHotKey() {
 }
 
 export function search(query, page, zhida) {
-    const url = '/musicApi/search'
+    const url = `${recordApiURL}/search`
     const data = Object.assign({}, commonParams, {
         w: query,
         p: page,

@@ -1,7 +1,7 @@
 import { get } from '../util/http'
 import service from '../util/request'
 import jsonp from '../common/js/jsonp'
-import { commonParams, options } from './config'
+import { commonParams, options, recordApiURL } from './config'
 
 export function getRecommend() {
     const url = "https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg"
@@ -15,7 +15,7 @@ export function getRecommend() {
 }
 
 export function getDiscList() {
-    const url = "/musicApi/getDiscList"
+    const url = `${recordApiURL}/getDiscList`
 
     const data = Object.assign({}, commonParams, {
         platform: 'yqq',
@@ -36,10 +36,10 @@ export function getDiscList() {
 }
 
 
-const getBannerList = get('/musicApi/getBannerList')
+const getBannerList = get(`${recordApiURL}/getBannerList`)
 
 export function getSongList(disstid) {
-    const url = '/musicApi/getSongList'
+    const url = `${recordApiURL}/getSongList`
     const data = Object.assign({}, commonParams, {
         disstid,
         type: 1,

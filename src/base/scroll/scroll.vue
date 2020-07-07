@@ -6,8 +6,8 @@
 </template>
 
 <script>
-// import BScroll from "better-scroll";
-import BScroll from "@better-scroll/core";
+import BScroll from "better-scroll";
+// import BScroll from "@better-scroll/core";
 
 export default {
   props: {
