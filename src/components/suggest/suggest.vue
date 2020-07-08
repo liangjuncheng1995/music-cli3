@@ -33,7 +33,6 @@ import Loading from "@/base/loading/loading";
 import NoResult from "@/base/no-result/no-result";
 import { Singer } from '@/common/js/singer';
 import { mapMutations, mapActions } from 'vuex';
-import { debuglog } from 'util';
 
 // import MescrollVue from "mescroll.js/mescroll.vue";
 const TYPE_SINGER = "singer";
@@ -79,7 +78,8 @@ export default {
       this.hasMore = true;
       this.showFlag = true;
       console.log("点击了搜索");
-
+      this.$refs.suggest.scrollTop = 0;
+      this.result = [];
       search(this.query, this.page, this.showSinger, perpage).then(res => {
         if (res.code === ERR_OK) {
           this.result = this._genResult(res.data);

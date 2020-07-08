@@ -523,6 +523,9 @@ export default {
     },
     playing(newPlaying) {
       this.$nextTick(() => {
+        if(!this.currentSong.url) {
+          return 
+        }
         newPlaying ? this.$refs.audio.play() : this.$refs.audio.pause();
       });
     }
