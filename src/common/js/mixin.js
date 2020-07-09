@@ -73,7 +73,7 @@ export const playerMixin = {
             }
             return 'icon-favoriteoutline'
         },
-        toggeleFavorite(song) {
+        toggleFavorite(song) {
             if (this.isFavorite(song)) {
                 this.deleteFavoriteList(song)
             } else {
