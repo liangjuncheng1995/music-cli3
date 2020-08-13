@@ -230,6 +230,8 @@ export default {
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
+            height: 22px;
+            line-height: 20px;
           }
         }
       }
